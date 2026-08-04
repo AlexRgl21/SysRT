@@ -1,8 +1,10 @@
 const { Router } = require('express');
-const { obtenerProductos } = require('../controladores/productos.controlador');
+const { obtenerProductos, crearProducto } = require('../controladores/productos.controlador');
 
 const enrutador = Router();
 
 enrutador.get('/productos', obtenerProductos);
+
+enrutador.post('/productos', crearProducto);
 
 module.exports = enrutador;

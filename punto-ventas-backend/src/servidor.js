@@ -16,3 +16,7 @@ app.get('/api', (req, res) => {
 app.listen(PUERTO, () => {
     console.log(`Servidor corriendo en http://localhost:${PUERTO}`);
 });
+
+
+const productosRutas = require('./rutas/productos.rutas');
+app.use('/api', productosRutas);

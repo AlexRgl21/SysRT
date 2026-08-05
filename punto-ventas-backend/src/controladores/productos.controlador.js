@@ -4,15 +4,21 @@ const pool = require('../configuracion/base_datos');
 const obtenerProductos = async(req, res) => {
     try{
         const query = `
-            SELECT 
-                p.id, p.nombre, p.categoria_id, p.precio_compra, p.precio_venta, p.stock_actual, p.created_at,
-                JSON_AGG(cb.codigo) FILTER (WHERE cb.codigo IS NOT NULL) AS codigos
-            FROM productos p
-            LEFT JOIN codigos_barras cb ON p.id = cb.producto_id
-            WHERE p.deleted_at IS NULL
-            GROUP BY p.id
-            ORDER BY p.id ASC;
-        `;
+    SELECT 
+        p.id, 
+        p.nombre, 
+        c.nombre AS categoria, /* <-- Extraemos el nombre de la categoría */
+        p.precio_compra, 
+        p.precio_venta, 
+        p.stock_actual,
+        COALESCE(JSON_AGG(cb.codigo) FILTER (WHERE cb.codigo IS NOT NULL), '[]') AS codigos
+    FROM productos p
+    LEFT JOIN codigos_barras cb ON p.id = cb.producto_id
+    LEFT JOIN categorias c ON p.categoria_id = c.id /* <-- Unimos la tabla categorias */
+    WHERE p.deleted_at IS NULL
+    GROUP BY p.id, c.nombre /* <-- Agrupamos también por la categoría */
+    ORDER BY p.id ASC;
+    `;
         const resultado = await pool.query(query);
         res.status(200).json(resultado.rows)
     } catch (error) {

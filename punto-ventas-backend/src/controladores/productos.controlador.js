@@ -1,29 +1,36 @@
 const pool = require('../configuracion/base_datos');
-const obtenerProductos = async(req, res) => {
-    
-    try{
-        const resultado = await pool.query(
-            'SELECT * FROM productos WHERE deleted_at IS NULL'
-        );
 
-    res.status(200).json(resultado.rows)
+// LECTURA
+const obtenerProductos = async(req, res) => {
+    try{
+        const query = `
+            SELECT 
+                p.id, p.nombre, p.categoria_id, p.precio_compra, p.precio_venta, p.stock_actual, p.created_at,
+                JSON_AGG(cb.codigo) FILTER (WHERE cb.codigo IS NOT NULL) AS codigos
+            FROM productos p
+            LEFT JOIN codigos_barras cb ON p.id = cb.producto_id
+            WHERE p.deleted_at IS NULL
+            GROUP BY p.id
+            ORDER BY p.id ASC;
+        `;
+        const resultado = await pool.query(query);
+        res.status(200).json(resultado.rows)
     } catch (error) {
         console.error('Error al obtener los productos:', error);
         res.status(500).json({mensaje: 'Error interno del servidor al consultar el inventario'});
     }
 };
 
-
-// REGISTRAR PRODUCTOS
-const crearProducto = async(req, res) => {
-    const {nombre, categoria_id, precio_compra, precio_venta, stock_actual, codigo } = req.body;
+// CREACIÓN 
+const crearProducto = async (req, res) => {
+    const { nombre, categoria_id, precio_compra, precio_venta, stock_actual, codigo } = req.body;
 
     try {
         await pool.query('BEGIN');
 
         const queryProducto = `
-        INSERT INTO productos (nombre, categoria_id, precio_compra, precio_venta, stock_actual)
-        VALUES ($1, $2, $3, $4, $5) RETURNING id, nombre;
+            INSERT INTO productos (nombre, categoria_id, precio_compra, precio_venta, stock_actual) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING id, nombre;
         `;
         const valoresProducto = [nombre, categoria_id || null, precio_compra || 0.00, precio_venta, stock_actual || 0.000];
         const resultadoProducto = await pool.query(queryProducto, valoresProducto);
@@ -51,7 +58,66 @@ const crearProducto = async(req, res) => {
     }
 };
 
+// ACTUALIZACIÓN (UPDATE)
+const actualizarProducto = async (req, res) => {
+    const { id } = req.params; // Capturamos el ID que viene en la URL
+    const { nombre, categoria_id, precio_compra, precio_venta, stock_actual } = req.body;
+
+    try {
+        const query = `
+            UPDATE productos 
+            SET nombre = $1, categoria_id = $2, precio_compra = $3, precio_venta = $4, stock_actual = $5
+            WHERE id = $6 AND deleted_at IS NULL
+            RETURNING *;
+        `;
+        const valores = [nombre, categoria_id || null, precio_compra, precio_venta, stock_actual, id];
+        const resultado = await pool.query(query, valores);
+
+        // Validamos si el producto existe o si ya estaba "eliminado"
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ mensaje: 'Producto no encontrado o inactivo' });
+        }
+
+        res.status(200).json({
+            mensaje: 'Producto actualizado correctamente',
+            producto: resultado.rows[0]
+        });
+    } catch (error) {
+        console.error('Error al actualizar el producto:', error);
+        res.status(500).json({ mensaje: 'Error interno al actualizar el producto' });
+    }
+};
+
+// BORRADO LÓGICO 
+const eliminarProducto = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const query = `
+            UPDATE productos 
+            SET deleted_at = CURRENT_TIMESTAMP 
+            WHERE id = $1 AND deleted_at IS NULL
+            RETURNING id, nombre;
+        `;
+        const resultado = await pool.query(query, [id]);
+
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ mensaje: 'Producto no encontrado o ya estaba eliminado' });
+        }
+
+        res.status(200).json({
+            mensaje: 'Producto eliminado del inventario (borrado lógico)',
+            producto: resultado.rows[0]
+        });
+    } catch (error) {
+        console.error('Error al eliminar el producto:', error);
+        res.status(500).json({ mensaje: 'Error interno al eliminar el producto' });
+    }
+};
+
 module.exports = {
     obtenerProductos,
-    crearProducto
+    crearProducto,
+    actualizarProducto,
+    eliminarProducto
 };

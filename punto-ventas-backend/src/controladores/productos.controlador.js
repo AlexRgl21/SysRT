@@ -115,9 +115,37 @@ const eliminarProducto = async (req, res) => {
     }
 };
 
+// RESTAURAR PRODUCTO
+const restaurarProducto = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const query = `
+            UPDATE productos 
+            SET deleted_at = NULL 
+            WHERE id = $1 AND deleted_at IS NOT NULL
+            RETURNING id, nombre;
+        `;
+        const resultado = await pool.query(query, [id]);
+
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ mensaje: 'Producto no encontrado o ya se encuentra activo' });
+        }
+
+        res.status(200).json({
+            mensaje: 'Producto restaurado exitosamente al catálogo',
+            producto: resultado.rows[0]
+        });
+    } catch (error) {
+        console.error('Error al restaurar el producto:', error);
+        res.status(500).json({ mensaje: 'Error interno al restaurar el producto' });
+    }
+};
+
 module.exports = {
     obtenerProductos,
     crearProducto,
     actualizarProducto,
-    eliminarProducto
+    eliminarProducto, 
+    restaurarProducto
 };

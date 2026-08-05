@@ -1,0 +1,97 @@
+/* Cabecera del Módulo*/
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 26px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+#btnNuevoProducto {
+    background-color: #38bdf8;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(56, 189, 248, 0.2);
+}
+
+#btnNuevoProducto:hover {
+    background-color: #0284c7;
+}
+
+/* Tabla de Inventario */
+.panel-tabla {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    padding: 20px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+thead th {
+    background-color: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 16px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+tbody td {
+    padding: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Indicadores de Stock y Botones */
+.stock-normal {
+    color: #15803d;
+    background-color: #dcfce7;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.stock-bajo {
+    color: #b91c1c;
+    background-color: #fee2e2;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.btn-editar, .btn-eliminar {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: transform 0.2s ease;
+}
+
+.btn-editar:hover, .btn-eliminar:hover {
+    transform: scale(1.1);
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario | SysRT - Punto de Venta</title>
+
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/inventario.css">
+</head>
+<body>
+    <div class="contenedor-principal">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="assets/logoSysRT.png" alt="Logo SysRT">
+            </div>
+            <nav>
+                <ul>
+                    <li>Dashboard</li>
+                    <li>Panel de Ventas</li>
+                    <li class="activo">Inventario</li>
+                    <li>Proveedores</li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="contenido">
+            <header>
+                <h1>Módulo de Inventario</h1>
+                <button id="btnNuevoProducto">+ Añadir Nuevo Producto</button>
+            </header>
+        
+        <section class="panel-tabla">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código Barras</th>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Precio Compra</th>
+                        <th>Precio Venta</th>
+                        <th>Stock Actual</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaProductos"></tbody>
+            </table>
+        </section>
+        </main>
+    </div>
+
+    <script src="js/inventario.js"></script>
+
+</body>
+</html>

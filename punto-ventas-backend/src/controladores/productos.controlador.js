@@ -148,10 +148,43 @@ const restaurarProducto = async (req, res) => {
     }
 };
 
+// BUSCAR POR CÓDIGO DE BARRAS (ESCÁNER)
+const buscarPorCodigo = async (req, res) => {
+    try {
+        const { codigo } = req.params;
+
+        const query = `
+            SELECT 
+                p.id, 
+                p.nombre, 
+                p.precio_compra, 
+                p.precio_venta, 
+                p.stock_actual,
+                c.nombre AS categoria
+            FROM productos p
+            INNER JOIN codigos_barras cb ON p.id = cb.producto_id
+            LEFT JOIN categorias c ON p.categoria_id = c.id
+            WHERE cb.codigo = $1 AND p.deleted_at IS NULL;
+        `;
+
+        const resultado = await pool.query(query, [codigo]);
+
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ mensaje: 'Producto no encontrado' });
+        }
+
+        res.status(200).json(resultado.rows[0]);
+    } catch (error) {
+        console.error('Error al buscar por código:', error);
+        res.status(500).json({ mensaje: 'Error interno del servidor al buscar el código' });
+    }
+};
+
 module.exports = {
     obtenerProductos,
     crearProducto,
     actualizarProducto,
     eliminarProducto, 
-    restaurarProducto
+    restaurarProducto, 
+    buscarPorCodigo
 };

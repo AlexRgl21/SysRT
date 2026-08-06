@@ -1,10 +1,12 @@
 const { Router } = require('express');
 
-const { obtenerProductos, crearProducto, actualizarProducto, eliminarProducto, restaurarProducto } = require('../controladores/productos.controlador');
+const { obtenerProductos, crearProducto, actualizarProducto, eliminarProducto, restaurarProducto, buscarPorCodigo } = require('../controladores/productos.controlador');
 
 const enrutador = Router();
 
 enrutador.get('/productos', obtenerProductos);
+
+enrutador.get('/productos/codigo/:codigo', buscarPorCodigo);
 
 enrutador.post('/productos', crearProducto);
 

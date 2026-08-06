@@ -73,3 +73,87 @@ const eliminarProducto = async (id) => {
 };
 
 document.addEventListener('DOMContentLoaded', cargarInventario);
+
+
+
+// Lógica de la Ventana Modal
+
+// Captura los elementos del DOM
+const btnNuevoProducto = document.getElementById('btnNuevoProducto');
+const modalProducto = document.getElementById('modalProducto');
+const btnCerrarModal = document.getElementById('btnCerrarModal');
+const inputCodigoBuscador = document.getElementById('inputCodigoBuscador');
+
+// 2. Evento para ABRIR el modal
+btnNuevoProducto.addEventListener('click', () => {
+
+    modalProducto.classList.remove('oculto');
+    
+    setTimeout(() => {
+        inputCodigoBuscador.focus();
+    }, 100); 
+});
+
+// 3. Evento para CERRAR el modal
+ btnCerrarModal.addEventListener('click', () => {
+    modalProducto.classList.add('oculto');
+    inputCodigoBuscador.value = '';
+    
+    seccionEscaner.classList.remove('oculto');
+    seccionIngresoStock.classList.add('oculto');
+    seccionNuevoProducto.classList.add('oculto');
+});
+
+modalProducto.addEventListener('click', (evento) => {
+    if (evento.target === modalProducto) {
+        modalProducto.classList.add('oculto');
+        inputCodigoBuscador.value = '';
+    }
+});
+
+
+
+// Lógica de Búsqueda 
+
+// Captura las secciones y botones
+const btnBuscarCodigo = document.getElementById('btnBuscarCodigo');
+const seccionEscaner = document.getElementById('seccionEscaner');
+const seccionIngresoStock = document.getElementById('seccionIngresoStock');
+const seccionNuevoProducto = document.getElementById('seccionNuevoProducto');
+const nombreProductoExistente = document.getElementById('nombreProductoExistente');
+const inputNuevoCodigo = document.getElementById('inputNuevoCodigo');
+
+btnBuscarCodigo.addEventListener('click', async () => {
+    const codigo = inputCodigoBuscador.value.trim();
+
+    if (!codigo) {
+        alert('Por favor, ingresa un código de barras.');
+        return;
+    }
+
+    try {
+        const respuesta = await fetch(`http://localhost:3000/api/productos/codigo/${codigo}`);
+
+        if (respuesta.ok) {
+            const producto = await respuesta.json();
+            
+            seccionEscaner.classList.add('oculto');
+            seccionIngresoStock.classList.remove('oculto');
+            
+            nombreProductoExistente.textContent = producto.nombre;
+            
+            document.getElementById('btnGuardarStock').dataset.productoId = producto.id; 
+
+        } else if (respuesta.status === 404) {
+            seccionEscaner.classList.add('oculto');
+            seccionNuevoProducto.classList.remove('oculto');
+            
+            inputNuevoCodigo.value = codigo;
+        } else {
+            alert('Error al procesar la solicitud en el servidor.');
+        }
+    } catch (error) {
+        console.error('Error de conexión:', error);
+        alert('Error al conectar con el servidor.');
+    }
+});

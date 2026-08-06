@@ -95,3 +95,155 @@ tbody tr:hover {
 .btn-editar:hover, .btn-eliminar:hover {
     transform: scale(1.1);
 }
+
+/* Ventana Modal y Overlays */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6); /* Fondo oscuro semitransparente */
+    backdrop-filter: blur(3px); /* Efecto de desenfoque moderno */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-contenido {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 450px;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    color: #1e293b;
+}
+
+.btn-cerrar {
+    background: none;
+    border: none;
+    font-size: 26px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-cerrar:hover {
+    color: #ef4444; /* Rojo al pasar el cursor */
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+/* Clase de Lógica de Interfaz */
+.oculto {
+    display: none !important;
+}
+
+/* Estilos de los Formularios Internos */
+.grupo-form {
+    margin-bottom: 16px;
+}
+
+.fila-form {
+    display: flex;
+    gap: 15px;
+}
+
+.fila-form .grupo-form {
+    flex: 1; /* Para que los precios midan lo mismo */
+}
+
+.grupo-form label, #seccionEscaner label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.grupo-form input, 
+.grupo-form select,
+#seccionEscaner input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.grupo-form input:focus,
+#seccionEscaner input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.grupo-form input:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* Botones y Alertas del Modal */
+.btn-primario {
+    width: 100%;
+    padding: 12px;
+    background-color: #38bdf8;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 5px;
+    transition: background-color 0.2s;
+}
+
+.btn-primario:hover {
+    background-color: #0284c7;
+}
+
+.alerta-exito {
+    color: #16a34a;
+    background-color: #dcfce7;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.alerta-aviso {
+    color: #b45309;
+    background-color: #fef3c7;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
+#nombreProductoExistente {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #0f172a;
+}

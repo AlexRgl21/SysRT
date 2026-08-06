@@ -30,23 +30,88 @@
                 <button id="btnNuevoProducto">+ Añadir Nuevo Producto</button>
             </header>
         
-        <section class="panel-tabla">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Código Barras</th>
-                        <th>Producto</th>
-                        <th>Categoría</th>
-                        <th>Precio Compra</th>
-                        <th>Precio Venta</th>
-                        <th>Stock Actual</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaProductos"></tbody>
-            </table>
-        </section>
+            <section class="panel-tabla">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código Barras</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Precio Compra</th>
+                            <th>Precio Venta</th>
+                            <th>Stock Actual</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaProductos"></tbody>
+                </table>
+            </section>
         </main>
+    </div>
+
+    <!-- Ventana Modal: Registro / Ingreso de Stock -->
+    <div id="modalProducto" class="modal-overlay oculto">
+        <div class="modal-contenido">
+            <header class="modal-header">
+                <h2>Gestión de Producto</h2>
+                <button id="btnCerrarModal" class="btn-cerrar">&times;</button>
+            </header>
+
+            <div class="modal-body">
+    
+                <div id="seccionEscaner">
+                    <label for="inputCodigoBuscador">Escanea o ingresa el código de barras:</label>
+                    <input type="text" id="inputCodigoBuscador" placeholder="Ej. 7501011167543" autocomplete="off">
+                    <button id="btnBuscarCodigo" class="btn-primario">Buscar Producto</button>
+                </div>
+
+                <div id="seccionIngresoStock" class="oculto">
+                    <p class="alerta-exito">¡Producto encontrado en el catálogo!</p>
+                    <h3 id="nombreProductoExistente">Nombre del Producto</h3>
+                    
+                    <div class="grupo-form">
+                        <label for="inputNuevasUnidades">Unidades a ingresar al inventario:</label>
+                        <input type="number" id="inputNuevasUnidades" min="1" value="1">
+                    </div>
+                    <button id="btnGuardarStock" class="btn-primario">Actualizar Inventario</button>
+                </div>
+
+                <div id="seccionNuevoProducto" class="oculto">
+                    <p class="alerta-aviso">El código no está registrado. Completa los datos para darlo de alta.</p>
+                    
+                    <div class="grupo-form">
+                        <label>Código de Barras</label>
+                        <input type="text" id="inputNuevoCodigo" disabled>
+                    </div>
+                    <div class="grupo-form">
+                        <label>Nombre del Producto</label>
+                        <input type="text" id="inputNuevoNombre" placeholder="Ej. Galletas Oreo 114g">
+                    </div>
+                    <div class="grupo-form">
+                        <label>Categoría</label>
+                        <select id="selectNuevaCategoria">
+                            <option value="1">Botanas</option>
+                            <option value="2">Lácteos</option>
+                            <option value="3">Panadería</option>
+                            <option value="4">Abarrotes</option>
+                            <option value="5">Limpieza e Higiene</option>
+                            <option value="6">Bebidas</option>
+                        </select>
+                    </div>
+                    <div class="fila-form">
+                        <div class="grupo-form">
+                            <label>Precio Compra ($)</label>
+                            <input type="number" id="inputNuevoPrecioCompra" step="0.01">
+                        </div>
+                        <div class="grupo-form">
+                            <label>Precio Venta ($)</label>
+                            <input type="number" id="inputNuevoPrecioVenta" step="0.01">
+                        </div>
+                    </div>
+                    <button id="btnGuardarNuevoProducto" class="btn-primario">Guardar Nuevo Producto</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="js/inventario.js"></script>

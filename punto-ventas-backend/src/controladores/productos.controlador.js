@@ -228,6 +228,18 @@ const registrarEntradaStock = async (req, res) => {
     }
 };
 
+// OBTENER CATEGORÍAS DINÁMICAS
+const obtenerCategorias = async (req, res) => {
+    try {
+        const query = 'SELECT id, nombre FROM categorias ORDER BY nombre ASC;';
+        const resultado = await pool.query(query);
+        res.status(200).json(resultado.rows);
+    } catch (error) {
+        console.error('Error al obtener categorías:', error);
+        res.status(500).json({ mensaje: 'Error al consultar las categorías' });
+    }
+};
+
 module.exports = {
     obtenerProductos,
     crearProducto,
@@ -235,5 +247,6 @@ module.exports = {
     eliminarProducto, 
     restaurarProducto, 
     buscarPorCodigo,
-    registrarEntradaStock
+    registrarEntradaStock,
+    obtenerCategorias
 };

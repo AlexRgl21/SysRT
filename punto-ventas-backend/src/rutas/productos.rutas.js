@@ -1,6 +1,6 @@
 const { Router } = require('express');
 
-const { obtenerProductos, crearProducto, actualizarProducto, eliminarProducto, restaurarProducto, buscarPorCodigo, registrarEntradaStock } = require('../controladores/productos.controlador');
+const { obtenerProductos, crearProducto, actualizarProducto, eliminarProducto, restaurarProducto, buscarPorCodigo, registrarEntradaStock, obtenerCategorias } = require('../controladores/productos.controlador');
 
 const enrutador = Router();
 
@@ -17,6 +17,8 @@ enrutador.delete('/productos/:id', eliminarProducto);
 enrutador.put('/productos/:id/restaurar', restaurarProducto);
 
 enrutador.put('/productos/:id/entrada', registrarEntradaStock)
+
+enrutador.get('/categorias', obtenerCategorias);
 
 
 module.exports = enrutador;

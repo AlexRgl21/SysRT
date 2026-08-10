@@ -3,9 +3,59 @@ const API_URL = 'http://localhost:3000/api/productos';
 const tbody = document.getElementById('tablaProductos');
 let listaProductosGlobal = [];
 
-// Función principal para extraer y renderizar los productos
-const cargarInventario = async() => {
-    try{
+/// Función encargada de dibujar las filas en el HTML
+const renderizarTabla = (productos) => {
+    tbody.innerHTML = '';
+
+    if (productos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No se encontraron productos.</td></tr>';
+        return;
+    }
+
+    productos.forEach(producto => {
+        const codigoMostrar = (producto.codigos && producto.codigos.length > 0)
+            ? producto.codigos[0]
+            : 'Sin Código';
+
+        const fila = document.createElement('tr');
+
+        fila.innerHTML = `
+            <td>${codigoMostrar}</td>
+            <td><strong>${producto.nombre}</strong></td>
+            <td>${producto.categoria ? producto.categoria : 'Sin categoría'}</td>
+            <td>$${Number(producto.precio_compra).toFixed(2)}</td>
+            <td>$${Number(producto.precio_venta).toFixed(2)}</td>
+            <td>
+                <span class="${producto.stock_actual < 10 ? 'stock-bajo' : 'stock-normal'}">
+                    ${producto.stock_actual}
+                </span>
+            </td>
+            <td>
+                <div style="display: flex; justify-content: center; gap: 8px; align-items: center;">
+                    <button onclick="editarProducto(${producto.id})" class="btn-editar" title="Editar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button onclick="eliminarProducto(${producto.id})" class="btn-eliminar" title="Eliminar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(fila);
+    });
+};
+
+// Función principal para extraer los productos de la base de datos
+const cargarInventario = async () => {
+    try {
         const respuesta = await fetch(API_URL);
 
         if (!respuesta.ok) {
@@ -15,41 +65,11 @@ const cargarInventario = async() => {
         const productos = await respuesta.json();
         listaProductosGlobal = productos; 
 
-        tbody.innerHTML = '';
+        renderizarTabla(listaProductosGlobal);
 
-        if (productos.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6">No hay productos activos en el inventario.</td></tr>';
-            return;
-        }
-
-        productos.forEach(producto => {
-            const codigoMostrar = (producto.codigos && producto.codigos.length > 0)
-            ? producto.codigos[0]
-            : 'Sin Código';
-
-        const fila = document.createElement('tr');
-            
-            fila.innerHTML = `
-                <td>${codigoMostrar}</td>
-                <td><strong>${producto.nombre}</strong></td>
-                <td>${producto.categoria ? producto.categoria : 'Sin categoría'}</td> <!-- NUEVO DATO -->
-                <td>$${Number(producto.precio_compra).toFixed(2)}</td>
-                <td>$${Number(producto.precio_venta).toFixed(2)}</td>
-                <td>
-                    <span class="${producto.stock_actual < 10 ? 'stock-bajo' : 'stock-normal'}">
-                        ${producto.stock_actual}
-                    </span>
-                </td>
-                <td>
-                    <button onclick="editarProducto(${producto.id})" class="btn-editar">✏️</button>
-                    <button onclick="eliminarProducto(${producto.id})" class="btn-eliminar">🗑️</button>
-                </td>
-            `;
-            tbody.appendChild(fila);
-        });
     } catch (error) {
         console.error('Error:', error);
-        tbody.innerHTML = '<tr><td colspan="6">Error al cargar el inventario. Verifica que el backend esté encendido.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7">Error al cargar el inventario. Verifica que el backend esté encendido.</td></tr>';
     }
 };
 
@@ -337,4 +357,21 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
         console.error('Error al actualizar:', error);
         alert('Error al conectar con el servidor.');
     }
+});
+
+
+// Buscador 
+const inputBuscadorTabla = document.getElementById('inputBuscadorTabla');
+
+inputBuscadorTabla.addEventListener('input', (evento) => {
+    const terminoBusqueda = evento.target.value.toLowerCase();
+
+    const productosFiltrados = listaProductosGlobal.filter(producto => {
+        const nombre = producto.nombre.toLowerCase();
+        const codigo = (producto.codigos && producto.codigos.length > 0) ? producto.codigos[0].toLowerCase() : '';
+
+        return nombre.includes(terminoBusqueda) || codigo.includes(terminoBusqueda);
+    });
+
+    renderizarTabla(productosFiltrados);
 });

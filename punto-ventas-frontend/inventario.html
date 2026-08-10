@@ -25,9 +25,14 @@
         </aside>
 
         <main class="contenido">
-            <header>
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h1>Módulo de Inventario</h1>
-                <button id="btnNuevoProducto">+ Añadir Nuevo Producto</button>
+                
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <input type="text" id="inputBuscadorTabla" placeholder="Buscar por nombre o código..." style="padding: 11px 15px; border-radius: 5px; border: 1px solid #ccc; width: 300px;">
+
+                    <button id="btnNuevoProducto" class="btn-primario" style="margin-top: 0; width: auto;">+ Añadir Nuevo Producto</button>
+                </div>
             </header>
         
             <section class="panel-tabla">
@@ -40,7 +45,7 @@
                             <th>Precio Compra</th>
                             <th>Precio Venta</th>
                             <th>Stock Actual</th>
-                            <th>Acciones</th>
+                            <th style="text-align: center;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tablaProductos"></tbody>
@@ -49,7 +54,6 @@
         </main>
     </div>
 
-    <!-- Ventana Modal: Registro / Ingreso de Stock -->
     <div id="modalProducto" class="modal-overlay oculto">
         <div class="modal-contenido">
             <header class="modal-header">

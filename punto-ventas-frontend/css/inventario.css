@@ -247,3 +247,36 @@ tbody tr:hover {
     margin-bottom: 20px;
     color: #0f172a;
 }
+
+/* Botones de Acción en la Tabla */
+
+.btn-editar, .btn-eliminar {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    margin: 0 2px;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilo para Editar (Azul) */
+.btn-editar {
+    color: #64748b; 
+}
+.btn-editar:hover {
+    color: #0284c7; 
+    background-color: #f0f9ff; 
+}
+
+/* Estilo para Eliminar (Rojo) */
+.btn-eliminar {
+    color: #64748b; 
+}
+.btn-eliminar:hover {
+    color: #e11d48; 
+    background-color: #fff1f2; 
+}

@@ -28,23 +28,26 @@ body {
 }
 
 /* --- Contenedor del Logo --- */
-.sidebar .logo {
-    text-align: center;
-    padding: 20px;
-    border-bottom: 1px solid #f1f5f9; 
+.sidebar .logo { 
     display: flex;
-    justify-content: center;
     align-items: center;
-    min-height: 90px;
+    justify-content: center;
+    overflow: hidden;
+    max-width: 140px;
 }
 
 /* --- Ajuste de la imagen del Logo --- */
 .sidebar .logo img {
-    width: 100%;
-    max-width: 260px; 
+    width: 220px; 
     height: auto;
-    transform: scale(1.9); 
-    transition: transform 0.3s ease;
+    object-fit: contain;
+
+    margin-top: -10px;
+    margin-bottom: -10px;
+    margin-left: -20px;
+
+    transform: scale(1.2); 
+    transform-origin: left center;
 }
 
 /* Navegación del Menú */
@@ -87,4 +90,71 @@ body {
     flex: 1;
     padding: 40px;
     overflow-y: auto;
+}
+
+
+/* Menu lateral desplegable */
+.sidebar {
+    width: 260px;
+    transition: width 0.3s ease; 
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-oculta {
+    width: 70px;
+}
+
+.cabecera-sidebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 15px;
+    border-bottom: 1px solid #f1f5f9;
+    min-height: 90px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.btn-toggle {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+    position: relative;
+    z-index: 10;
+}
+
+.btn-toggle:hover {
+    color: #38bdf8;
+}
+
+.sidebar-oculta .texto-menu {
+    display: none;
+}
+
+.sidebar-oculta .logo img {
+    display: none; 
+}
+
+.sidebar-oculta .cabecera-sidebar {
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 15px;
+    padding: 15px 5px;
+    border-bottom: none;
+}
+
+.sidebar-oculta nav li {
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-oculta nav li {
+    background-color: transparent;
+    box-shadow: none
 }

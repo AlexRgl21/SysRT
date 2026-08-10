@@ -10,16 +10,19 @@
 </head>
 <body>
     <div class="contenedor-principal">
-        <aside class="sidebar">
-            <div class="logo">
-                <img src="assets/logoSysRT.png" alt="Logo SysRT">
+        <aside class="sidebar" id="sidebarGlobal">
+            <div class="cabecera-sidebar">
+                <div class="logo">
+                    <img src="assets/logoSysRT.png" alt="Logo SysRT" id="logoSidebar">
+                </div>
+                <button id="btnToggleSidebar" class="btn-toggle" title="Colapsar menú">☰</button>
             </div>
             <nav>
                 <ul>
-                    <li>Dashboard</li>
-                    <li>Panel de Ventas</li>
-                    <li class="activo">Inventario</li>
-                    <li>Proveedores</li>
+                    <li><span class="texto-menu">Dashboard</span></li>
+                    <li><span class="texto-menu">Ventas</span></li>
+                    <li class="activo"><span class="texto-menu">Inventario</span></li>
+                    <li><span class="texto-menu">Proveedores</span></li>
                 </ul>
             </nav>
         </aside>
@@ -144,6 +147,7 @@
     </div>
 
     <script src="js/inventario.js"></script>
+    <script src="js/global.js"></script>
 
 </body>
 </html>

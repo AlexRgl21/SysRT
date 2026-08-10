@@ -360,18 +360,60 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
 });
 
 
-// Buscador 
-const inputBuscadorTabla = document.getElementById('inputBuscadorTabla');
+// Función para descargar y pintar las categorías dinámicamente
+const cargarCategorias = async () => {
+    try {
+        const respuesta = await fetch('http://localhost:3000/api/categorias');
+        if (!respuesta.ok) throw new Error('Error al conectar');
+        
+        const categorias = await respuesta.json();
+        
+        const selectFiltro = document.getElementById('selectFiltroCategoria');
+        const selectNueva = document.getElementById('selectNuevaCategoria');
 
-inputBuscadorTabla.addEventListener('input', (evento) => {
-    const terminoBusqueda = evento.target.value.toLowerCase();
+        categorias.forEach(cat => {
+            selectNueva.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+        });
+
+        categorias.forEach(cat => {
+            selectFiltro.innerHTML += `<option value="${cat.nombre}">${cat.nombre}</option>`;
+        });
+
+    } catch (error) {
+        console.error('Error al cargar categorías:', error);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    cargarInventario();
+    cargarCategorias(); 
+});
+
+
+// Filtros Múltiples (Texto + Categoría)
+const inputBuscadorTabla = document.getElementById('inputBuscadorTabla');
+const selectFiltroCategoria = document.getElementById('selectFiltroCategoria');
+
+const filtrarTabla = () => {
+    const terminoBusqueda = inputBuscadorTabla.value.toLowerCase();
+    const categoriaSeleccionada = selectFiltroCategoria.value;
 
     const productosFiltrados = listaProductosGlobal.filter(producto => {
+        
+        // Verificamos si coincide el texto (nombre o código)
         const nombre = producto.nombre.toLowerCase();
         const codigo = (producto.codigos && producto.codigos.length > 0) ? producto.codigos[0].toLowerCase() : '';
+        const coincideTexto = nombre.includes(terminoBusqueda) || codigo.includes(terminoBusqueda);
 
-        return nombre.includes(terminoBusqueda) || codigo.includes(terminoBusqueda);
+        // Verificamos si coincide la categoría
+        const categoriaProducto = producto.categoria ? producto.categoria : 'Sin categoría';
+        const coincideCategoria = categoriaSeleccionada === 'todas' || categoriaProducto === categoriaSeleccionada;
+
+        return coincideTexto && coincideCategoria;
     });
 
     renderizarTabla(productosFiltrados);
-});
+};
+
+inputBuscadorTabla.addEventListener('input', filtrarTabla);
+selectFiltroCategoria.addEventListener('change', filtrarTabla);

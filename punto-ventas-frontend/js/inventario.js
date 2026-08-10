@@ -77,14 +77,11 @@ document.addEventListener('DOMContentLoaded', cargarInventario);
 
 
 // Lógica de la Ventana Modal
-
-// Captura los elementos del DOM
 const btnNuevoProducto = document.getElementById('btnNuevoProducto');
 const modalProducto = document.getElementById('modalProducto');
 const btnCerrarModal = document.getElementById('btnCerrarModal');
 const inputCodigoBuscador = document.getElementById('inputCodigoBuscador');
 
-// 2. Evento para ABRIR el modal
 btnNuevoProducto.addEventListener('click', () => {
 
     modalProducto.classList.remove('oculto');
@@ -94,7 +91,6 @@ btnNuevoProducto.addEventListener('click', () => {
     }, 100); 
 });
 
-// 3. Evento para CERRAR el modal
  btnCerrarModal.addEventListener('click', () => {
     modalProducto.classList.add('oculto');
     inputCodigoBuscador.value = '';
@@ -114,8 +110,6 @@ modalProducto.addEventListener('click', (evento) => {
 
 
 // Lógica de Búsqueda 
-
-// Captura las secciones y botones
 const btnBuscarCodigo = document.getElementById('btnBuscarCodigo');
 const seccionEscaner = document.getElementById('seccionEscaner');
 const seccionIngresoStock = document.getElementById('seccionIngresoStock');
@@ -155,5 +149,63 @@ btnBuscarCodigo.addEventListener('click', async () => {
     } catch (error) {
         console.error('Error de conexión:', error);
         alert('Error al conectar con el servidor.');
+    }
+});
+
+// ALTA DE PRODUCTO 
+
+const btnGuardarNuevoProducto = document.getElementById('btnGuardarNuevoProducto');
+
+btnGuardarNuevoProducto.addEventListener('click', async () => {
+    const codigo = inputNuevoCodigo.value; 
+    const nombre = document.getElementById('inputNuevoNombre').value.trim();
+    const categoria_id = document.getElementById('selectNuevaCategoria').value;
+    const precio_compra = document.getElementById('inputNuevoPrecioCompra').value;
+    const precio_venta = document.getElementById('inputNuevoPrecioVenta').value;
+
+    if (!nombre || !precio_compra || !precio_venta) {
+        alert('Por favor, completa el nombre y los precios del producto.');
+        return;
+    }
+
+    const nuevoProducto = {
+        nombre: nombre,
+        categoria_id: parseInt(categoria_id),
+        precio_compra: parseFloat(precio_compra),
+        precio_venta: parseFloat(precio_venta),
+        stock_actual: 0, 
+        codigo: codigo
+    };
+
+    try {
+        const respuesta = await fetch('http://localhost:3000/api/productos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(nuevoProducto)
+        });
+
+        if (respuesta.ok) {
+            alert('¡Producto registrado exitosamente en el catálogo!');
+            
+            modalProducto.classList.add('oculto');
+            document.getElementById('inputNuevoNombre').value = '';
+            document.getElementById('inputNuevoPrecioCompra').value = '';
+            document.getElementById('inputNuevoPrecioVenta').value = '';
+            inputCodigoBuscador.value = '';
+            
+            seccionEscaner.classList.remove('oculto');
+            seccionNuevoProducto.classList.add('oculto');
+
+            cargarInventario();
+            
+        } else {
+            const error = await respuesta.json();
+            alert(`Hubo un problema: ${error.mensaje}`);
+        }
+    } catch (error) {
+        console.error('Error al guardar el producto:', error);
+        alert('Error al conectar con el servidor para guardar el producto.');
     }
 });

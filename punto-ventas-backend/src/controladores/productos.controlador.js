@@ -7,16 +7,17 @@ const obtenerProductos = async(req, res) => {
     SELECT 
         p.id, 
         p.nombre, 
-        c.nombre AS categoria, /* <-- Extraemos el nombre de la categoría */
+        p.categoria_id, /* <-- NUEVO: Extraemos el ID de la categoría */
+        c.nombre AS categoria, 
         p.precio_compra, 
         p.precio_venta, 
         p.stock_actual,
         COALESCE(JSON_AGG(cb.codigo) FILTER (WHERE cb.codigo IS NOT NULL), '[]') AS codigos
     FROM productos p
     LEFT JOIN codigos_barras cb ON p.id = cb.producto_id
-    LEFT JOIN categorias c ON p.categoria_id = c.id /* <-- Unimos la tabla categorias */
+    LEFT JOIN categorias c ON p.categoria_id = c.id 
     WHERE p.deleted_at IS NULL
-    GROUP BY p.id, c.nombre /* <-- Agrupamos también por la categoría */
+    GROUP BY p.id, c.nombre, p.categoria_id /* <-- NUEVO: Lo agregamos a la agrupación */
     ORDER BY p.id ASC;
     `;
         const resultado = await pool.query(query);
@@ -180,11 +181,59 @@ const buscarPorCodigo = async (req, res) => {
     }
 };
 
+
+// REGISTRAR ENTRADA DE STOCK
+const registrarEntradaStock = async (req, res) => {
+    const { id } = req.params;
+    const { cantidad } = req.body;
+
+    if (!cantidad || cantidad <= 0 ) {
+        return res.status(400).json({ mensaje: 'La cantidad debe ser mayor a cero.'})
+    }
+
+    try {
+        await pool.query('BEGIN');
+
+        const queryUpdate = `
+            UPDATE productos
+            SET stock_actual = stock_actual + $1
+            WHERE id = $2 AND deleted_at IS NULL
+            RETURNING id, nombre, stock_actual;
+        `;
+        const resUpdate = await pool.query(queryUpdate, [cantidad, id]);
+
+        if (resUpdate.rows.length === 0) {
+            await pool.query('ROLLBACK');
+            return res.status(404).json({ mensaje: 'Producto no encontrado o inactivo' });
+        }
+
+        const productoActualizado = resUpdate.rows[0];
+
+        const queryKardex = `
+            INSERT INTO kardex_inventario (producto_id, tipo_movimiento, cantidad)
+            VALUES ($1, 'ENTRADA', $2);
+        `;
+        await pool.query(queryKardex, [id, cantidad]);
+
+        await pool.query('COMMIT');
+
+        res.status(200).json({
+            mensaje: 'Stock actualizado y registrado exitosamente',
+            producto: productoActualizado
+        });
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        console.error('Error en la transacción de entrada de stock:', error);
+        res.status(500).json({ mensaje: 'Error interno al procesar la entrada de mercancía' });
+    }
+};
+
 module.exports = {
     obtenerProductos,
     crearProducto,
     actualizarProducto,
     eliminarProducto, 
     restaurarProducto, 
-    buscarPorCodigo
+    buscarPorCodigo,
+    registrarEntradaStock
 };

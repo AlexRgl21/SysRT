@@ -1,6 +1,7 @@
 const API_URL = 'http://localhost:3000/api/productos';
 
 const tbody = document.getElementById('tablaProductos');
+let listaProductosGlobal = [];
 
 // Función principal para extraer y renderizar los productos
 const cargarInventario = async() => {
@@ -12,6 +13,7 @@ const cargarInventario = async() => {
         }
 
         const productos = await respuesta.json();
+        listaProductosGlobal = productos; 
 
         tbody.innerHTML = '';
 
@@ -50,6 +52,7 @@ const cargarInventario = async() => {
         tbody.innerHTML = '<tr><td colspan="6">Error al cargar el inventario. Verifica que el backend esté encendido.</td></tr>';
     }
 };
+
 
 // Función para el borrado logico
 const eliminarProducto = async (id) => {
@@ -98,12 +101,18 @@ btnNuevoProducto.addEventListener('click', () => {
     seccionEscaner.classList.remove('oculto');
     seccionIngresoStock.classList.add('oculto');
     seccionNuevoProducto.classList.add('oculto');
+    document.getElementById('seccionEditarProducto').classList.add('oculto');
 });
 
 modalProducto.addEventListener('click', (evento) => {
     if (evento.target === modalProducto) {
         modalProducto.classList.add('oculto');
         inputCodigoBuscador.value = '';
+
+        seccionEscaner.classList.remove('oculto');
+        seccionIngresoStock.classList.add('oculto');
+        seccionNuevoProducto.classList.add('oculto');
+        document.getElementById('seccionEditarProducto').classList.add('oculto');
     }
 });
 
@@ -207,5 +216,125 @@ btnGuardarNuevoProducto.addEventListener('click', async () => {
     } catch (error) {
         console.error('Error al guardar el producto:', error);
         alert('Error al conectar con el servidor para guardar el producto.');
+    }
+});
+
+
+// INGRESO DE STOCK A PRODCUTO EXISTENTE 
+const btnGuardarStock = document.getElementById('btnGuardarStock');
+
+btnGuardarStock.addEventListener('click', async () => {
+    const productoId = btnGuardarStock.dataset.productoId;
+
+    const cantidadInput = document.getElementById('inputNuevasUnidades').value;
+    const cantidad = parseInt(cantidadInput);
+
+    if (!cantidad || cantidad <= 0) {
+        alert('Por favor, ingresa una cantidad válida mayor a cero.');
+        return;
+    }
+
+    try {
+        const respuesta = await fetch(`http://localhost:3000/api/productos/${productoId}/entrada`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cantidad: cantidad })
+        });
+
+        if (respuesta.ok) {
+            alert('¡Inventario actualizado exitosamente!');
+
+            modalProducto.classList.add('oculto');
+            document.getElementById('inputNuevasUnidades').value = '1';
+            inputCodigoBuscador.value = '';
+
+            seccionEscaner.classList.remove('oculto');
+            seccionIngresoStock.classList.add('oculto');
+
+            cargarInventario();
+
+        } else {
+            const error = await respuesta.json();
+            alert(`Hubo un problema: ${error.mensaje}`);
+        } 
+    } catch (error) {
+        console.error('Error al actualizar el stock:', error);
+        alert('Error al conectar con el servidor.');
+    }
+});
+
+
+// MODIFICAR UN PRODUCTO 
+window.editarProducto = (id) => {
+    const producto = listaProductosGlobal.find(p => p.id === id);
+    if (!producto) return;
+
+    document.getElementById('inputEditarId').value = producto.id;
+    document.getElementById('inputEditarNombre').value = producto.nombre;
+    document.getElementById('inputEditarPrecioCompra').value = producto.precio_compra;
+    document.getElementById('inputEditarPrecioVenta').value = producto.precio_venta;
+
+    const btnGuardar = document.getElementById('btnGuardarEdicion');
+    btnGuardar.dataset.categoriaId = producto.categoria_id;
+    btnGuardar.dataset.stockActual = producto.stock_actual;
+
+    // 4. Transformamos el modal
+    document.getElementById('seccionEscaner').classList.add('oculto');
+    document.getElementById('seccionIngresoStock').classList.add('oculto');
+    document.getElementById('seccionNuevoProducto').classList.add('oculto');
+    
+    document.getElementById('seccionEditarProducto').classList.remove('oculto');
+    document.getElementById('modalProducto').classList.remove('oculto');
+};
+
+document.getElementById('btnGuardarEdicion').addEventListener('click', async () => {
+    const id = document.getElementById('inputEditarId').value;
+    const nombre = document.getElementById('inputEditarNombre').value.trim();
+    const precio_compra = document.getElementById('inputEditarPrecioCompra').value;
+    const precio_venta = document.getElementById('inputEditarPrecioVenta').value;
+    
+    const btnGuardar = document.getElementById('btnGuardarEdicion');
+    const categoria_id = btnGuardar.dataset.categoriaId;
+    const stock_actual = btnGuardar.dataset.stockActual;
+
+    if (!nombre || !precio_compra || !precio_venta) {
+        alert('Por favor, completa el nombre y ambos precios.');
+        return;
+    }
+
+    const productoActualizado = {
+        nombre: nombre,
+        categoria_id: categoria_id && categoria_id !== "null" ? parseInt(categoria_id) : null,
+        precio_compra: parseFloat(precio_compra),
+        precio_venta: parseFloat(precio_venta),
+        stock_actual: parseFloat(stock_actual)
+    };
+
+    try {
+        const respuesta = await fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(productoActualizado)
+        });
+
+        if (respuesta.ok) {
+            alert('¡Producto actualizado exitosamente!');
+            
+            document.getElementById('modalProducto').classList.add('oculto');
+            document.getElementById('seccionEditarProducto').classList.add('oculto');
+            document.getElementById('seccionEscaner').classList.remove('oculto'); 
+            
+            cargarInventario();
+        } else {
+            const error = await respuesta.json();
+            alert(`Hubo un problema: ${error.mensaje}`);
+        }
+    } catch (error) {
+        console.error('Error al actualizar:', error);
+        alert('Error al conectar con el servidor.');
     }
 });

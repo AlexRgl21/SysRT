@@ -110,6 +110,27 @@
                     </div>
                     <button id="btnGuardarNuevoProducto" class="btn-primario">Guardar Nuevo Producto</button>
                 </div>
+
+                <div id="seccionEditarProducto" class="oculto">
+                    <p class="alerta-exito" style="background-color: #e0f2fe; color: #0284c7;">Modifica los detalles del producto.</p>
+                    <input type="hidden" id="inputEditarId">
+                    
+                    <div class="grupo-form">
+                        <label>Nombre del Producto</label>
+                        <input type="text" id="inputEditarNombre">
+                    </div>
+                    <div class="fila-form">
+                        <div class="grupo-form">
+                            <label>Precio Compra ($)</label>
+                            <input type="number" id="inputEditarPrecioCompra" step="0.01">
+                        </div>
+                        <div class="grupo-form">
+                            <label>Precio Venta ($)</label>
+                            <input type="number" id="inputEditarPrecioVenta" step="0.01">
+                        </div>
+                    </div>
+                    <button id="btnGuardarEdicion" class="btn-primario">Guardar Cambios</button>
+                </div>
             </div>
         </div>
     </div>

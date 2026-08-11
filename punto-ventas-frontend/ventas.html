@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Ventas | SysRT - Punto de Venta</title>
+
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/ventas.css">
+</head>
+<body>
+    <div class="contenedor-principal">
+        <aside class="sidebar" id="sidebarGlobal">
+            <div class="cabecera-sidebar">
+                <div class="logo">
+                    <img src="assets/logoSysRT.png" alt="Logo SysRT" id="logoSidebar">
+                </div>
+                <button id="btnToggleSidebar" class="btn-toggle" title="Colapsar menú">☰</button>
+            </div>
+            <nav>
+                <ul>
+                    <li><span class="texto-menu">Dashboard</span></li>
+                    <li class="activo"><span class="texto-menu">Ventas</span></li>
+                    <li><span class="texto-menu">Inventario</span></li>
+                    <li><span class="texto-menu">Proveedores</span></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="contenido layout-ventas">
+            
+            <section class="panel-carrito">
+                <header class="header-ventas">
+                    <h1>Terminal de Punto de Venta</h1>
+                    
+                    <div class="buscador-escaner">
+                        <input type="text" id="inputEscanerVenta" placeholder="Escanea el código de barras o busca un producto..." autofocus>
+                    </div>
+                </header>
+
+                <div class="contenedor-tabla-carrito">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th style="text-align: center;">Cantidad</th>
+                                <th>Precio Unit.</th>
+                                <th>Subtotal</th>
+                                <th style="text-align: center;">Quitar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCarrito">
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="panel-cobro">
+                <div class="resumen-venta">
+                    <h2>Total a Pagar</h2>
+                    <div class="total-display" id="displayTotal">$0.00</div>
+                </div>
+
+                <div class="detalles-pago">
+                    <div class="grupo-form-venta">
+                        <label>Método de Pago</label>
+                        <select id="selectMetodoPago">
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo-form-venta" id="seccionEfectivo">
+                        <label>Efectivo Recibido ($)</label>
+                        <input type="number" id="inputEfectivoRecibido" placeholder="0.00" step="0.50">
+                    </div>
+
+                    <div class="calculo-cambio">
+                        <span>Cambio:</span>
+                        <span class="monto-cambio" id="displayCambio">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="acciones-cobro">
+                    <button id="btnCancelarVenta" class="btn-secundario">Cancelar Venta</button>
+                    <button id="btnProcesarVenta" class="btn-cobrar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Procesar Cobro
+                    </button>
+                </div>
+            </aside>
+
+        </main>
+    </div>
+
+    <script src="js/global.js"></script>
+    <script src="js/ventas.js"></script>
+</body>
+</html>

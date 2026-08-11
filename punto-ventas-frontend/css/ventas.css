@@ -1,0 +1,248 @@
+/*  Layout Principal del Panel de Ventas */
+.layout-ventas {
+    display: flex;
+    gap: 20px;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    /* Evita que el contenedor crezca y hace que la tabla tenga scroll interno */
+    overflow: hidden; 
+}
+
+/* Panel Izquierdo: Carrito de Compras (70%) */
+.panel-carrito {
+    flex: 7;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.header-ventas {
+    padding: 20px 25px;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+}
+
+.header-ventas h1 {
+    font-size: 22px;
+    color: #1e293b;
+    margin-bottom: 15px;
+}
+
+/* Input Escáner Extragrande */
+.buscador-escaner {
+    position: relative;
+    width: 100%;
+}
+
+.icono-escaner {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+
+#inputEscanerVenta {
+    width: 100%;
+    padding: 16px 20px 16px 45px;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 18px;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.2s;
+}
+
+#inputEscanerVenta:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+}
+
+/* Tabla del Carrito */
+.contenedor-tabla-carrito {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+table { width: 100%; border-collapse: collapse; text-align: left; }
+thead th { background-color: #ffffff; color: #64748b; padding: 15px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; }
+tbody td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; vertical-align: middle; }
+tbody tr:nth-child(even) { background-color: #f8fafc; }
+
+/* Controles de + y - en la tabla */
+.control-cantidad {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.control-cantidad button {
+    background-color: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    cursor: pointer;
+    color: #475569;
+    transition: background-color 0.2s;
+}
+
+.control-cantidad button:hover { background-color: #e2e8f0; }
+.control-cantidad input {
+    width: 40px;
+    height: 32px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid #cbd5e1;
+    border-right: 1px solid #cbd5e1;
+    font-size: 15px;
+    font-weight: 600;
+    pointer-events: none; 
+}
+
+/* Botón de la X para eliminar fila */
+.btn-eliminar-fila {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-eliminar-fila:hover {
+    color: #ef4444;
+    background-color: #fef2f2;
+}
+
+/* Panel Derecho: Zona de Cobro (30%) */
+.panel-cobro {
+    flex: 3;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+}
+
+.resumen-venta {
+    padding: 30px 20px;
+    text-align: center;
+    background-color: #ffffff;
+    border-bottom: 2px dashed #cbd5e1;
+    border-radius: 12px 12px 0 0;
+}
+
+.resumen-venta h2 {
+    font-size: 16px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.total-display {
+    font-size: 48px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.detalles-pago {
+    padding: 25px 20px;
+    flex-grow: 1;
+}
+
+.grupo-form-venta {
+    margin-bottom: 20px;
+}
+
+.grupo-form-venta label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.grupo-form-venta select, .grupo-form-venta input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    outline: none;
+    background-color: #ffffff;
+}
+
+.grupo-form-venta input:focus { border-color: #38bdf8; }
+
+.calculo-cambio {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    padding: 15px;
+    background-color: #dcfce7;
+    border-radius: 8px;
+    border: 1px solid #bbf7d0;
+}
+
+.calculo-cambio span { font-size: 18px; color: #166534; font-weight: 600; }
+.calculo-cambio .monto-cambio { font-size: 24px; font-weight: 800; }
+
+/* Botonera inferior */
+.acciones-cobro {
+    padding: 20px;
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    border-radius: 0 0 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-cobrar {
+    width: 100%;
+    padding: 18px;
+    background-color: #16a34a; /* Verde brillante para indicar cobro */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.2s;
+    box-shadow: 0 4px 6px rgba(22, 163, 74, 0.2);
+}
+
+.btn-cobrar:hover { background-color: #15803d; }
+
+.btn-secundario {
+    width: 100%;
+    padding: 14px;
+    background-color: #ffffff;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secundario:hover {
+    background-color: #fef2f2;
+}

@@ -1,16 +1,30 @@
-// CARRITO DE VENTAS 
+// CARRITO DE VENTAS Y MODAL DE COBRO
 
 let carrito = [];
+let totalConComision = 0; 
 
+// ELEMENTOS DEL DOM - PANEL PRINCIPAL
 const inputEscanner = document.getElementById('inputEscanerVenta');
 const tablaCarrito = document.getElementById('tablaCarrito');
 const spanTotalVenta = document.getElementById('displayTotal');
-const btnCobrar = document.getElementById('btnProcesarVenta');
-const selectMetodoPago = document.getElementById('selectMetodoPago');
-const inputEfectivoRecibido = document.getElementById('inputEfectivoRecibido');
-const displayCambio = document.getElementById('displayCambio');
+const btnProcederPago = document.getElementById('btnProcesarVenta'); 
 
-// BUSCAR PRODUCTO POR CÓDIGO DE BARRAS (ESCÁNER)
+const modalCobro = document.getElementById('modalCobro');
+const btnCerrarModal = document.getElementById('btnCerrarModal');
+const modalSubtotal = document.getElementById('modalSubtotal');
+const filaComision = document.getElementById('filaComision');
+const modalComision = document.getElementById('modalComision');
+const modalTotalFinal = document.getElementById('modalTotalFinal');
+const selectMetodoPagoModal = document.getElementById('selectMetodoPagoModal');
+const seccionEfectivoModal = document.getElementById('seccionEfectivoModal');
+const inputEfectivoModal = document.getElementById('inputEfectivoModal');
+const displayCambioModal = document.getElementById('displayCambioModal');
+const btnConfirmarPago = document.getElementById('btnConfirmarPago'); 
+
+
+
+// LÓGICA DEL CARRITO Y ESCÁNER
+
 async function buscarYAgregarProducto(codigo) {
     try {
         const respuesta = await fetch(`http://localhost:3000/api/productos/codigo/${codigo}`);
@@ -21,6 +35,8 @@ async function buscarYAgregarProducto(codigo) {
         }
 
         const producto = await respuesta.json();
+
+        producto.codigo = producto.codigo || codigo;
         agregarAlCarrito(producto);
     } catch (error) {
         console.error('Error al buscar el producto:', error);
@@ -28,7 +44,6 @@ async function buscarYAgregarProducto(codigo) {
     }
 }
 
-// GREGAR PRODUCTO EN EL CARRITO
 const agregarAlCarrito = (producto) => {
     const index = carrito.findIndex(item => item.id === producto.id);
 
@@ -43,11 +58,9 @@ const agregarAlCarrito = (producto) => {
             cantidad: 1
         });
     }
-
     renderizarCarrito();
 };
 
-// RENDERIZAR LOS PRODUCTOS EN LA TABLA 
 const renderizarCarrito = () => {
     tablaCarrito.innerHTML = '';
     let totalAcumulado = 0;
@@ -55,7 +68,6 @@ const renderizarCarrito = () => {
     if (carrito.length === 0) {
         tablaCarrito.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888; padding: 20px;">El carrito está vacío. Escanea un producto.</td></tr>`;
         spanTotalVenta.textContent = '$0.00';
-        calcularCambio(0);
         return;
     }
 
@@ -86,10 +98,8 @@ const renderizarCarrito = () => {
     });
 
     spanTotalVenta.textContent = `$${totalAcumulado.toFixed(2)}`;
-    calcularCambio(totalAcumulado);
 };
 
-// MODIFICAR CANTIDAD DESDE LOS BOTONES (+ / -)
 window.cambiarCantidad = (index, delta) => {
     carrito[index].cantidad += delta;
     if (carrito[index].cantidad <= 0) {
@@ -98,27 +108,11 @@ window.cambiarCantidad = (index, delta) => {
     renderizarCarrito();
 };
 
-// ELIMINAR PRODUCTO DEL CARRITO
 window.eliminarDelCarrito = (index) => {
     carrito.splice(index, 1);
     renderizarCarrito();
 };
 
-// CALCULAR CAMBIO EN EFECTIVO
-const calcularCambio = (total) => {
-    const efectivoRecibido = Number(inputEfectivoRecibido.value) || 0;
-    const cambio = efectivoRecibido - total;
-    displayCambio.textContent = cambio >= 0 ? `$${cambio.toFixed(2)}` : '$0.00';
-};
-
-if (inputEfectivoRecibido) {
-    inputEfectivoRecibido.addEventListener('input', () => {
-        const totalActual = carrito.reduce((acc, item) => acc + (item.cantidad * item.precio_venta), 0);
-        calcularCambio(totalActual);
-    });
-}
-
-// CAPTURAR CÓDIGO DE BARRAS AL PRESIONAR ENTER
 if (inputEscanner) {
     inputEscanner.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -132,21 +126,79 @@ if (inputEscanner) {
     });
 }
 
-// PROCESAR COBRO Y ENVIAR AL BACKEND
-if (btnCobrar) {
-    btnCobrar.addEventListener('click', async () => {
+
+// LÓGICA DEL MODAL Y COBRO FINAL
+
+if (btnProcederPago) {
+    btnProcederPago.addEventListener('click', () => {
         if (carrito.length === 0) {
             alert('El carrito está vacío. Agrega productos antes de cobrar.');
             return;
         }
 
-        const metodoPagoSelect = selectMetodoPago ? selectMetodoPago.value : 'efectivo';
-        const totalGeneral = carrito.reduce((acc, item) => acc + (item.cantidad * item.precio_venta), 0);
+        const subtotal = carrito.reduce((acc, item) => acc + (item.cantidad * item.precio_venta), 0);
+        totalConComision = subtotal; // Inicializamos con el subtotal normal
 
+        // Llenar textos del modal
+        modalSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+        modalTotalFinal.textContent = `$${subtotal.toFixed(2)}`;
+        
+        // Resetear la vista del modal a efectivo por defecto
+        selectMetodoPagoModal.value = 'efectivo';
+        seccionEfectivoModal.style.display = 'block';
+        filaComision.style.display = 'none';
+        inputEfectivoModal.value = '';
+        displayCambioModal.textContent = '$0.00';
+
+        modalCobro.classList.add('modal-activo');
+    });
+}
+
+// CERRAR MODAL
+if (btnCerrarModal) {
+    btnCerrarModal.addEventListener('click', () => {
+        modalCobro.classList.remove('modal-activo');
+    });
+}
+
+// DETECTAR MÉTODO DE PAGO Y APLICAR 5%
+if (selectMetodoPagoModal) {
+    selectMetodoPagoModal.addEventListener('change', (e) => {
+        const subtotal = carrito.reduce((acc, item) => acc + (item.cantidad * item.precio_venta), 0);
+        
+        if (e.target.value === 'tarjeta') {
+            const comision = subtotal * 0.05; // 5% extra
+            totalConComision = subtotal + comision;
+            
+            modalComision.textContent = `$${comision.toFixed(2)}`;
+            filaComision.style.display = 'block';
+            seccionEfectivoModal.style.display = 'none'; // Sin cambio en tarjeta
+        } else {
+            totalConComision = subtotal;
+            filaComision.style.display = 'none';
+            seccionEfectivoModal.style.display = 'block';
+        }
+        
+        modalTotalFinal.textContent = `$${totalConComision.toFixed(2)}`;
+    });
+}
+
+// CALCULAR CAMBIO EN EL MODAL
+if (inputEfectivoModal) {
+    inputEfectivoModal.addEventListener('input', () => {
+        const recibido = Number(inputEfectivoModal.value) || 0;
+        const cambio = recibido - totalConComision;
+        displayCambioModal.textContent = cambio >= 0 ? `$${cambio.toFixed(2)}` : '$0.00';
+    });
+}
+
+// CONFIRMAR Y ENVIAR AL BACKEND
+if (btnConfirmarPago) {
+    btnConfirmarPago.addEventListener('click', async () => {
         const datosVenta = {
             usuario_id: 1, 
-            metodo_pago: metodoPagoSelect,
-            total: totalGeneral,
+            metodo_pago: selectMetodoPagoModal.value,
+            total: totalConComision, // Enviamos el total ya afectado por la comisión
             productos: carrito.map(item => ({
                 id: item.id,
                 cantidad: item.cantidad,
@@ -157,9 +209,7 @@ if (btnCobrar) {
         try {
             const respuesta = await fetch('http://localhost:3000/api/ventas', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datosVenta)
             });
 
@@ -172,10 +222,10 @@ if (btnCobrar) {
 
             alert(`¡Venta cobrada con éxito! Ticket #${resultado.venta_id}`);
             
+            // Éxito: Limpiamos todo y cerramos el modal
             carrito = [];
             renderizarCarrito();
-            if (inputEfectivoRecibido) inputEfectivoRecibido.value = '';
-            if (displayCambio) displayCambio.textContent = '$0.00';
+            modalCobro.classList.remove('modal-activo');
 
         } catch (error) {
             console.error('Error de red al procesar el cobro:', error);

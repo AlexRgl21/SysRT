@@ -2,7 +2,10 @@
 
 let carrito = [];
 let totalConComision = 0; 
+let productoEnEspera = null;
 
+
+const categoriasPrecioVariable = ['Carnes Frías', 'Recargas', 'Frutas y verduras'];
 // ELEMENTOS DEL DOM - PANEL PRINCIPAL
 const inputEscanner = document.getElementById('inputEscanerVenta');
 const tablaCarrito = document.getElementById('tablaCarrito');
@@ -20,7 +23,11 @@ const seccionEfectivoModal = document.getElementById('seccionEfectivoModal');
 const inputEfectivoModal = document.getElementById('inputEfectivoModal');
 const displayCambioModal = document.getElementById('displayCambioModal');
 const btnConfirmarPago = document.getElementById('btnConfirmarPago'); 
-
+const modalPrecioVariable = document.getElementById('modalPrecioVariable');
+const btnCerrarModalPrecio = document.getElementById('btnCerrarModalPrecio');
+const btnConfirmarPrecio = document.getElementById('btnConfirmarPrecio');
+const inputPrecioVariable = document.getElementById('inputPrecioVariable');
+const textoProductoVariable = document.getElementById('textoProductoVariable');
 
 
 // LÓGICA DEL CARRITO Y ESCÁNER
@@ -35,9 +42,18 @@ async function buscarYAgregarProducto(codigo) {
         }
 
         const producto = await respuesta.json();
-
         producto.codigo = producto.codigo || codigo;
-        agregarAlCarrito(producto);
+
+        if (categoriasPrecioVariable.includes(producto.categoria)) {
+            productoEnEspera = producto;
+            textoProductoVariable.innerHTML = `Producto: <strong>${producto.nombre}</strong>`;
+            inputPrecioVariable.value = '';
+            
+            modalPrecioVariable.classList.add('modal-activo');
+            setTimeout(() => inputPrecioVariable.focus(), 100); 
+        } else {
+            agregarAlCarrito(producto);
+        }
     } catch (error) {
         console.error('Error al buscar el producto:', error);
         alert('Error de conexión con el servidor.');
@@ -230,6 +246,42 @@ if (btnConfirmarPago) {
         } catch (error) {
             console.error('Error de red al procesar el cobro:', error);
             alert('No se pudo conectar con el servidor para procesar el cobro.');
+        }
+    });
+}
+
+
+// LOGICA DEL MODAL DE PRECIO VARIABLE
+if (btnCerrarModalPrecio) {
+    btnCerrarModalPrecio.addEventListener('click', () => {
+        modalPrecioVariable.classList.remove('modal-activo');
+        productoEnEspera = null;
+    });
+}
+
+if (btnConfirmarPrecio) {
+    btnConfirmarPrecio.addEventListener('click', () => {
+        const nuevoPrecio = Number(inputPrecioVariable.value);
+        
+        if (nuevoPrecio <= 0) {
+            alert('Por favor ingresa un monto válido mayor a 0.');
+            return;
+        }
+
+        productoEnEspera.precio_venta = nuevoPrecio;
+        
+        agregarAlCarrito(productoEnEspera);
+        
+        modalPrecioVariable.classList.remove('modal-activo');
+        productoEnEspera = null;
+    });
+}
+
+if (inputPrecioVariable) {
+    inputPrecioVariable.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            btnConfirmarPrecio.click();
         }
     });
 }

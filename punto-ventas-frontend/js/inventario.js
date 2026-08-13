@@ -77,7 +77,18 @@ const cargarInventario = async () => {
 // Función para el borrado logico
 const eliminarProducto = async (id) => {
     
-    if (!confirm('¿Estás seguro de que deseas dar de baja este producto?')) return;
+    const confirmacion = await Swal.fire({
+        title: '¿Dar de baja el producto?',
+        text: "El producto se ocultará de la pagina principal.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!confirmacion.isConfirmed) return;
 
     try {
         const respuesta = await fetch(`${API_URL}/${id}`, {
@@ -85,13 +96,25 @@ const eliminarProducto = async (id) => {
         });
 
         if (respuesta.ok) {
-            alert('Producto eliminado lógicamente');
+            Toastify({
+                text: "Producto eliminado correctamente.",
+                duration: 3000,
+                gravity: "bottom",
+                position: "center",
+                style: { background: "#10b981"}
+            }).showToast();
+
             cargarInventario(); 
         } else {
-            alert('Hubo un problema al eliminar el producto');
+            Swal.fire('Error', 'Hubo un problema al eliminar el producto', 'error');
         }
     } catch (error) {
         console.error('Error en la petición DELETE:', error);
+        Toastify({
+            text: "Error de conexión",
+            duration: 3000,
+            style: { background: "#ef4444"}
+        }).showToast();
     }
 };
 
@@ -181,8 +204,8 @@ btnBuscarCodigo.addEventListener('click', async () => {
     }
 });
 
-// ALTA DE PRODUCTO 
 
+// ALTA DE PRODUCTO 
 const btnGuardarNuevoProducto = document.getElementById('btnGuardarNuevoProducto');
 
 btnGuardarNuevoProducto.addEventListener('click', async () => {
@@ -193,7 +216,13 @@ btnGuardarNuevoProducto.addEventListener('click', async () => {
     const precio_venta = document.getElementById('inputNuevoPrecioVenta').value;
 
     if (!nombre || !precio_compra || !precio_venta) {
-        alert('Por favor, completa el nombre y los precios del producto.');
+        Toastify({
+            text: "Por favor, completa el nombre y los precios",
+            duration: 3000,
+            gravity: "buttom", 
+            position: "center",
+            style: { background: "#f59e0b" }
+        }).showToast();
         return;
     }
 
@@ -216,7 +245,13 @@ btnGuardarNuevoProducto.addEventListener('click', async () => {
         });
 
         if (respuesta.ok) {
-            alert('¡Producto registrado exitosamente en el catálogo!');
+            Toastify({
+                text: "¡Producto registrado exitosamente!",
+                duration: 3000,
+                gravity: "bottom", 
+                position: "center",
+                style: { background: "#10b981" }
+            }).showToast();
             
             modalProducto.classList.add('oculto');
             document.getElementById('inputNuevoNombre').value = '';
@@ -231,11 +266,11 @@ btnGuardarNuevoProducto.addEventListener('click', async () => {
             
         } else {
             const error = await respuesta.json();
-            alert(`Hubo un problema: ${error.mensaje}`);
+            Swal.fire('Error', `Hubo un problema: ${error.mensaje}`, 'error');
         }
     } catch (error) {
         console.error('Error al guardar el producto:', error);
-        alert('Error al conectar con el servidor para guardar el producto.');
+        Swal.fire('Error', 'Error al conectar con el servidor', 'error');
     }
 });
 
@@ -250,7 +285,13 @@ btnGuardarStock.addEventListener('click', async () => {
     const cantidad = parseInt(cantidadInput);
 
     if (!cantidad || cantidad <= 0) {
-        alert('Por favor, ingresa una cantidad válida mayor a cero.');
+        Toastify({
+            text: "Ingresa una cantidad valida mayor a cero",
+            duration: 3000,
+            gravity: "bottom",
+            position: "center",
+            style: { background: "#f59e0b" }
+        }).showToast();
         return;
     }
 
@@ -264,7 +305,13 @@ btnGuardarStock.addEventListener('click', async () => {
         });
 
         if (respuesta.ok) {
-            alert('¡Inventario actualizado exitosamente!');
+            Toastify({
+                text: "¡Inventario actualizado exitosamente!",
+                duration: 3000,
+                gravity: "bottom",
+                position: "center",
+                style: { background: "#10b981" }
+            }).showToast();
 
             modalProducto.classList.add('oculto');
             document.getElementById('inputNuevasUnidades').value = '1';
@@ -277,11 +324,11 @@ btnGuardarStock.addEventListener('click', async () => {
 
         } else {
             const error = await respuesta.json();
-            alert(`Hubo un problema: ${error.mensaje}`);
+            Swal.fire('Error', `Hubo un problema: ${error.mensaje}`, 'error');
         } 
     } catch (error) {
         console.error('Error al actualizar el stock:', error);
-        alert('Error al conectar con el servidor.');
+        Swal.fire('Error', 'Error al conectar con el servidor', 'error');
     }
 });
 
@@ -320,7 +367,13 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
     const stock_actual = btnGuardar.dataset.stockActual;
 
     if (!nombre || !precio_compra || !precio_venta) {
-        alert('Por favor, completa el nombre y ambos precios.');
+        Toastify({
+            text: "Por favor, completa el nombre y ambos precios",
+            duration: 3000,
+            gravity: "bottom",
+            position: "center",
+            style: { background: "#f59e0b"}
+        }).showToast();
         return;
     }
 
@@ -342,7 +395,13 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
         });
 
         if (respuesta.ok) {
-            alert('¡Producto actualizado exitosamente!');
+            Toastify({
+                text: "¡Producto actualizado correctamente!",
+                duration: 3000,
+                gravity: "bottom", 
+                position: "center", 
+                style: { background: "#10b981"}
+            }).showToast();
             
             document.getElementById('modalProducto').classList.add('oculto');
             document.getElementById('seccionEditarProducto').classList.add('oculto');
@@ -351,11 +410,11 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
             cargarInventario();
         } else {
             const error = await respuesta.json();
-            alert(`Hubo un problema: ${error.mensaje}`);
+            Swal.fire('Error', `Hubo un problema: ${error.mensaje}`, 'error');
         }
     } catch (error) {
         console.error('Error al actualizar:', error);
-        alert('Error al conectar con el servidor.');
+        Swal.fire('Error', 'Error al conectar con el servidor', 'error');
     }
 });
 

@@ -28,6 +28,7 @@ const btnCerrarModalPrecio = document.getElementById('btnCerrarModalPrecio');
 const btnConfirmarPrecio = document.getElementById('btnConfirmarPrecio');
 const inputPrecioVariable = document.getElementById('inputPrecioVariable');
 const textoProductoVariable = document.getElementById('textoProductoVariable');
+const btnCancelarVenta = document.getElementById('btnCancelarVenta')
 
 
 // LÓGICA DEL CARRITO Y ESCÁNER
@@ -284,4 +285,27 @@ if (inputPrecioVariable) {
             btnConfirmarPrecio.click();
         }
     });
+}
+
+// LOGICA PARA CANCELAR LA VENTA
+if (btnCancelarVenta) {
+    btnCancelarVenta.addEventListener('click', () => {
+        if (carrito.length === 0) {
+            alert('No hay productos en la venta actual.');
+            return;
+        }
+
+        const confirmacion = confirm('¿Estás seguro de que deseas cancelar toda la venta y vaciar el carrito?');
+
+        if (confirmacion) {
+            carrito = [];
+
+            renderizarCarrito();
+
+            if (inputEscanner) {
+                inputEscanner.focus();
+            }
+        }
+    });
+
 }

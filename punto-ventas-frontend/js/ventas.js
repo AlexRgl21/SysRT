@@ -64,15 +64,26 @@ async function buscarYAgregarProducto(codigo) {
 const agregarAlCarrito = (producto) => {
     const index = carrito.findIndex(item => item.id === producto.id);
 
+    const stockDisponible = Number(producto.stock_actual) || 0;
     if (index !== -1) {
+        if (carrito[index].cantidad + 1 > stockDisponible) {
+            alert(`STOCK INSUFICIENTE\n\nNo hay suficientes unidades de "${producto.nombre}".\nStock actual en el sistema: ${stockDisponible}`);
+            return;
+        }
         carrito[index].cantidad += 1;
     } else {
+
+        if (1 > stockDisponible) {
+            alert(`STOCK INSUFICIENTE\n\nEl producto "${producto.nombre}" se encuentra agotado.\nStock actual en sistema: ${stockDisponible}`);
+        }
+
         carrito.push({
             id: producto.id,
             codigo: producto.codigo || 'S/N',
             nombre: producto.nombre,
             precio_venta: Number(producto.precio_venta),
-            cantidad: 1
+            cantidad: 1, 
+            stock_actual: stockDisponible
         });
     }
     renderizarCarrito();
@@ -118,7 +129,16 @@ const renderizarCarrito = () => {
 };
 
 window.cambiarCantidad = (index, delta) => {
+    const item = carrito[index];
+
+    if (delta > 0) {
+        if (item.cantidad + delta > item.stock_actual) {
+            alert(`STOCK INSUFICIENTE\n\nLímite alcanzado para "${item.nombre}".\nNo puedes agregar más de ${item.stock_actual} unidades.`);
+            return; 
+        }
+    }
     carrito[index].cantidad += delta;
+    
     if (carrito[index].cantidad <= 0) {
         carrito.splice(index, 1);
     }

@@ -226,6 +226,17 @@ btnGuardarNuevoProducto.addEventListener('click', async () => {
         return;
     }
 
+    if (parseFloat(precio_compra) < 0 || parseFloat(precio_venta) < 0) {
+        Toastify({
+            text: "Los precios no pueden ser números negativos",
+            duration: 3000,
+            gravity: "bottom", 
+            position: "center",
+            style: { background: "#ef4444" }
+        }).showToast();
+        return;
+    }
+
     const nuevoProducto = {
         nombre: nombre,
         categoria_id: parseInt(categoria_id),
@@ -377,6 +388,17 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
         return;
     }
 
+    if (parseFloat(precio_compra) < 0 || parseFloat(precio_venta) < 0) {
+        Toastify({
+            text: "Los precios no pueden ser números negativos",
+            duration: 3000,
+            gravity: "bottom", 
+            position: "center",
+            style: { background: "#ef4444" }
+        }).showToast();
+        return;
+    }
+
     const productoActualizado = {
         nombre: nombre,
         categoria_id: categoria_id && categoria_id !== "null" ? parseInt(categoria_id) : null,
@@ -430,6 +452,9 @@ const cargarCategorias = async () => {
         const selectFiltro = document.getElementById('selectFiltroCategoria');
         const selectNueva = document.getElementById('selectNuevaCategoria');
 
+        selectNueva.innerHTML = '<option value="" disabled selected>Selecciona una categoría</option>';
+        selectFiltro.innerHTML = '<option value="todas">Todas las categorías</option>';
+        
         categorias.forEach(cat => {
             selectNueva.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
         });

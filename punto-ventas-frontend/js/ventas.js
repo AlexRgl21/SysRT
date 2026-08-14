@@ -38,7 +38,13 @@ async function buscarYAgregarProducto(codigo) {
         const respuesta = await fetch(`http://localhost:3000/api/productos/codigo/${codigo}`);
 
         if (!respuesta.ok) {
-            alert('Producto no encontrado en el inventario o código inválido.');
+            Toastify({
+                text: "Producto no encontrado o código inválido",
+                duration: 3000,
+                gravity: "bottom",
+                position: "center",
+                style: { background: "#f59e0b"}
+            }).showToast();
             return;
         }
 
@@ -57,7 +63,13 @@ async function buscarYAgregarProducto(codigo) {
         }
     } catch (error) {
         console.error('Error al buscar el producto:', error);
-        alert('Error de conexión con el servidor.');
+        Toastify({
+            text: "Error de conexión con el servidor.",
+            duration: 3000,
+            gravity: "bottom",
+            position: "center",
+            style: { background: "#ef4444" }
+        }).showToast();
     }
 }
 
@@ -67,14 +79,26 @@ const agregarAlCarrito = (producto) => {
     const stockDisponible = Number(producto.stock_actual) || 0;
     if (index !== -1) {
         if (carrito[index].cantidad + 1 > stockDisponible) {
-            alert(`STOCK INSUFICIENTE\n\nNo hay suficientes unidades de "${producto.nombre}".\nStock actual en el sistema: ${stockDisponible}`);
-            return;
+            Toastify({
+                text: `¡Stock insuficiente para "${producto.nombre}"!\nLímite: ${stockDisponible}`,
+                duration: 4000,
+                gravity: "bottom", 
+                position: "center",
+                style: { background: "#ef4444"}
+            }).showToast();
+            return;  
         }
         carrito[index].cantidad += 1;
     } else {
 
         if (1 > stockDisponible) {
-            alert(`STOCK INSUFICIENTE\n\nEl producto "${producto.nombre}" se encuentra agotado.\nStock actual en sistema: ${stockDisponible}`);
+            Toastify({
+                text: `El producto "${producto.nombre}" está agotado.`,
+                duration: 4000,
+                gravity: "bottom",
+                position: "center",
+                style: { background: "#ef4444"}
+            }).showToast();
         }
 
         carrito.push({
@@ -133,7 +157,13 @@ window.cambiarCantidad = (index, delta) => {
 
     if (delta > 0) {
         if (item.cantidad + delta > item.stock_actual) {
-            alert(`STOCK INSUFICIENTE\n\nLímite alcanzado para "${item.nombre}".\nNo puedes agregar más de ${item.stock_actual} unidades.`);
+            Toastify({
+                text: `Limite alcanzado. No puedes agregar más de ${item.stock_actual} unidades.`,
+                duration: 3000,
+                gravity: "bottom",
+                position: "center",
+                style: { background: "#f59e0b"}
+            }).showToast();
             return; 
         }
     }
@@ -169,7 +199,13 @@ if (inputEscanner) {
 if (btnProcederPago) {
     btnProcederPago.addEventListener('click', () => {
         if (carrito.length === 0) {
-            alert('El carrito está vacío. Agrega productos antes de cobrar.');
+            Toastify({
+                text: "El carrito está vacío. Agrega productos antes de cobrar.",
+                duration: 3000,
+                gravity: "bottom", 
+                position: "center",
+                style: { background: "#f59e0b" } // Naranja
+            }).showToast();
             return;
         }
 
@@ -253,11 +289,17 @@ if (btnConfirmarPago) {
             const resultado = await respuesta.json();
 
             if (!respuesta.ok) {
-                alert(`Error al procesar la venta: ${resultado.mensaje || 'Error desconocido'}`);
+                Swal.fire('Error', `Error al procesar la venta: ${resultado.mensaje || 'Error desconocido'}`, 'error');
                 return;
             }
 
-            alert(`¡Venta cobrada con éxito! Ticket #${resultado.venta_id}`);
+            await Swal.fire({
+                title: '¡Cobro Exitoso!',
+                text: `Ticket #${resultado.venta_id} registrado correctamente.`,
+                icon: 'success',
+                confirmButtonColor: '#10b981',
+                confirmButtonText: 'Aceptar'
+            })
             
             // Éxito: Limpiamos todo y cerramos el modal
             carrito = [];
@@ -266,7 +308,7 @@ if (btnConfirmarPago) {
 
         } catch (error) {
             console.error('Error de red al procesar el cobro:', error);
-            alert('No se pudo conectar con el servidor para procesar el cobro.');
+            Swal.fire('Error de Conexión', 'No se pudo conectar con el servidor para procesar el cobro.', 'error');
         }
     });
 }
@@ -285,7 +327,13 @@ if (btnConfirmarPrecio) {
         const nuevoPrecio = Number(inputPrecioVariable.value);
         
         if (nuevoPrecio <= 0) {
-            alert('Por favor ingresa un monto válido mayor a 0.');
+            Toastify({
+                text: "Por favor ingresa un monto válido mayor a $0.00",
+                duration: 3000,
+                gravity: "bottom", 
+                position: "center",
+                style: { background: "#f59e0b" }
+            }).showToast();
             return;
         }
 
@@ -309,18 +357,39 @@ if (inputPrecioVariable) {
 
 // LOGICA PARA CANCELAR LA VENTA
 if (btnCancelarVenta) {
-    btnCancelarVenta.addEventListener('click', () => {
+    btnCancelarVenta.addEventListener('click', async () => {
         if (carrito.length === 0) {
-            alert('No hay productos en la venta actual.');
+            Toastify({
+                text: "No hay productos en la venta actual.",
+                duration: 3000,
+                gravity: "bottom", position: "center",
+                style: { background: "#f59e0b" }
+            }).showToast();
             return;
         }
 
-        const confirmacion = confirm('¿Estás seguro de que deseas cancelar toda la venta y vaciar el carrito?');
+        const confirmacion = await Swal.fire({
+            title: '¿Cancelar toda la venta?',
+            text: "Se vaciará el carrito y tendrás que escanear todo de nuevo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444', 
+            cancelButtonColor: '#64748b',  
+            confirmButtonText: 'Sí, cancelar venta',
+            cancelButtonText: 'Volver'
+        });
 
-        if (confirmacion) {
+        if (confirmacion.isConfirmed) {
             carrito = [];
 
             renderizarCarrito();
+
+            Toastify({
+                text: "Venta cancelada.",
+                duration: 3000,
+                gravity: "bottom", position: "center",
+                style: { background: "#64748b" }
+            }).showToast();
 
             if (inputEscanner) {
                 inputEscanner.focus();

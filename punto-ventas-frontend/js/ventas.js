@@ -2,6 +2,9 @@
 
 const API_URL = 'http://localhost:3000/api';
 
+const sonidoBeepOk = new Audio('assets/beep-ok.mp3');
+const sonidoBeepError = new Audio('assets/beep-error.mp3');
+
 let carrito = [];
 let totalConComision = 0; 
 let productoEnEspera = null;
@@ -40,6 +43,7 @@ async function buscarYAgregarProducto(codigo) {
         const respuesta = await fetch(`${API_URL}/productos/codigo/${codigo}`);
 
         if (!respuesta.ok) {
+            sonidoBeepError.play();
             Toastify({
                 text: "Producto no encontrado o código inválido",
                 duration: 3000,
@@ -64,6 +68,7 @@ async function buscarYAgregarProducto(codigo) {
             agregarAlCarrito(producto);
         }
     } catch (error) {
+        sonidoBeepError.play();
         console.error('Error al buscar el producto:', error);
         Toastify({
             text: "Error de conexión con el servidor.",
@@ -81,6 +86,7 @@ const agregarAlCarrito = (producto) => {
     const stockDisponible = Number(producto.stock_actual) || 0;
     if (index !== -1) {
         if (carrito[index].cantidad + 1 > stockDisponible) {
+            sonidoBeepError.play();
             Toastify({
                 text: `¡Stock insuficiente para "${producto.nombre}"!\nLímite: ${stockDisponible}`,
                 duration: 4000,
@@ -90,10 +96,12 @@ const agregarAlCarrito = (producto) => {
             }).showToast();
             return;  
         }
+        sonidoBeepOk.play();
         carrito[index].cantidad += 1;
     } else {
 
         if (1 > stockDisponible) {
+            sonidoBeepError.play();
             Toastify({
                 text: `El producto "${producto.nombre}" está agotado.`,
                 duration: 4000,
@@ -101,6 +109,7 @@ const agregarAlCarrito = (producto) => {
                 position: "center",
                 style: { background: "#ef4444"}
             }).showToast();
+            return;
         }
 
         carrito.push({
@@ -111,6 +120,7 @@ const agregarAlCarrito = (producto) => {
             cantidad: 1, 
             stock_actual: stockDisponible
         });
+        sonidoBeepOk.play();
     }
     renderizarCarrito();
 };

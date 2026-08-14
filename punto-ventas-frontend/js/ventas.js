@@ -41,7 +41,7 @@ async function buscarYAgregarProducto(codigo) {
             Toastify({
                 text: "Producto no encontrado o código inválido",
                 duration: 3000,
-                gravity: "bottom",
+                gravity: "top",
                 position: "center",
                 style: { background: "#f59e0b"}
             }).showToast();
@@ -66,7 +66,7 @@ async function buscarYAgregarProducto(codigo) {
         Toastify({
             text: "Error de conexión con el servidor.",
             duration: 3000,
-            gravity: "bottom",
+            gravity: "top",
             position: "center",
             style: { background: "#ef4444" }
         }).showToast();
@@ -82,7 +82,7 @@ const agregarAlCarrito = (producto) => {
             Toastify({
                 text: `¡Stock insuficiente para "${producto.nombre}"!\nLímite: ${stockDisponible}`,
                 duration: 4000,
-                gravity: "bottom", 
+                gravity: "top", 
                 position: "center",
                 style: { background: "#ef4444"}
             }).showToast();
@@ -95,7 +95,7 @@ const agregarAlCarrito = (producto) => {
             Toastify({
                 text: `El producto "${producto.nombre}" está agotado.`,
                 duration: 4000,
-                gravity: "bottom",
+                gravity: "top",
                 position: "center",
                 style: { background: "#ef4444"}
             }).showToast();
@@ -160,7 +160,7 @@ window.cambiarCantidad = (index, delta) => {
             Toastify({
                 text: `Limite alcanzado. No puedes agregar más de ${item.stock_actual} unidades.`,
                 duration: 3000,
-                gravity: "bottom",
+                gravity: "top",
                 position: "center",
                 style: { background: "#f59e0b"}
             }).showToast();
@@ -202,7 +202,7 @@ if (btnProcederPago) {
             Toastify({
                 text: "El carrito está vacío. Agrega productos antes de cobrar.",
                 duration: 3000,
-                gravity: "bottom", 
+                gravity: "top", 
                 position: "center",
                 style: { background: "#f59e0b" } // Naranja
             }).showToast();
@@ -330,7 +330,7 @@ if (btnConfirmarPrecio) {
             Toastify({
                 text: "Por favor ingresa un monto válido mayor a $0.00",
                 duration: 3000,
-                gravity: "bottom", 
+                gravity: "top", 
                 position: "center",
                 style: { background: "#f59e0b" }
             }).showToast();
@@ -362,7 +362,7 @@ if (btnCancelarVenta) {
             Toastify({
                 text: "No hay productos en la venta actual.",
                 duration: 3000,
-                gravity: "bottom", position: "center",
+                gravity: "top", position: "center",
                 style: { background: "#f59e0b" }
             }).showToast();
             return;
@@ -387,7 +387,7 @@ if (btnCancelarVenta) {
             Toastify({
                 text: "Venta cancelada.",
                 duration: 3000,
-                gravity: "bottom", position: "center",
+                gravity: "top", position: "center",
                 style: { background: "#64748b" }
             }).showToast();
 

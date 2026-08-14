@@ -99,7 +99,7 @@ const eliminarProducto = async (id) => {
             Toastify({
                 text: "Producto eliminado correctamente.",
                 duration: 3000,
-                gravity: "bottom",
+                gravity: "top",
                 position: "center",
                 style: { background: "#10b981"}
             }).showToast();
@@ -230,7 +230,7 @@ btnGuardarNuevoProducto.addEventListener('click', async () => {
         Toastify({
             text: "Los precios no pueden ser números negativos",
             duration: 3000,
-            gravity: "bottom", 
+            gravity: "top", 
             position: "center",
             style: { background: "#ef4444" }
         }).showToast();
@@ -259,7 +259,7 @@ btnGuardarNuevoProducto.addEventListener('click', async () => {
             Toastify({
                 text: "¡Producto registrado exitosamente!",
                 duration: 3000,
-                gravity: "bottom", 
+                gravity: "top", 
                 position: "center",
                 style: { background: "#10b981" }
             }).showToast();
@@ -299,7 +299,7 @@ btnGuardarStock.addEventListener('click', async () => {
         Toastify({
             text: "Ingresa una cantidad valida mayor a cero",
             duration: 3000,
-            gravity: "bottom",
+            gravity: "top",
             position: "center",
             style: { background: "#f59e0b" }
         }).showToast();
@@ -319,7 +319,7 @@ btnGuardarStock.addEventListener('click', async () => {
             Toastify({
                 text: "¡Inventario actualizado exitosamente!",
                 duration: 3000,
-                gravity: "bottom",
+                gravity: "top",
                 position: "center",
                 style: { background: "#10b981" }
             }).showToast();
@@ -381,7 +381,7 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
         Toastify({
             text: "Por favor, completa el nombre y ambos precios",
             duration: 3000,
-            gravity: "bottom",
+            gravity: "top",
             position: "center",
             style: { background: "#f59e0b"}
         }).showToast();
@@ -392,7 +392,7 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
         Toastify({
             text: "Los precios no pueden ser números negativos",
             duration: 3000,
-            gravity: "bottom", 
+            gravity: "top", 
             position: "center",
             style: { background: "#ef4444" }
         }).showToast();
@@ -420,7 +420,7 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
             Toastify({
                 text: "¡Producto actualizado correctamente!",
                 duration: 3000,
-                gravity: "bottom", 
+                gravity: "top", 
                 position: "center", 
                 style: { background: "#10b981"}
             }).showToast();

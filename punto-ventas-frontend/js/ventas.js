@@ -1,5 +1,7 @@
 // CARRITO DE VENTAS Y MODAL DE COBRO
 
+const API_URL = 'http://localhost:3000/api';
+
 let carrito = [];
 let totalConComision = 0; 
 let productoEnEspera = null;
@@ -35,7 +37,7 @@ const btnCancelarVenta = document.getElementById('btnCancelarVenta')
 
 async function buscarYAgregarProducto(codigo) {
     try {
-        const respuesta = await fetch(`http://localhost:3000/api/productos/codigo/${codigo}`);
+        const respuesta = await fetch(`${API_URL}/productos/codigo/${codigo}`);
 
         if (!respuesta.ok) {
             Toastify({
@@ -178,6 +180,7 @@ window.cambiarCantidad = (index, delta) => {
 window.eliminarDelCarrito = (index) => {
     carrito.splice(index, 1);
     renderizarCarrito();
+    if (inputEscanner) inputEscanner.focus();
 };
 
 if (inputEscanner) {
@@ -231,6 +234,7 @@ if (btnProcederPago) {
 if (btnCerrarModal) {
     btnCerrarModal.addEventListener('click', () => {
         modalCobro.classList.remove('modal-activo');
+        if (inputEscanner) inputEscanner.focus();
     });
 }
 
@@ -268,6 +272,23 @@ if (inputEfectivoModal) {
 // CONFIRMAR Y ENVIAR AL BACKEND
 if (btnConfirmarPago) {
     btnConfirmarPago.addEventListener('click', async () => {
+        if (selectMetodoPagoModal.value === 'efectivo') {
+            const recibido = Number(inputEfectivoModal.value) || 0;
+            if (recibido < totalConComision) {
+                Toastify({
+                    text: "El monto recibido es menor al total a pagar.",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    style: { background: "#ef4444" }
+                }).showToast();
+                return;
+            }
+        }
+        btnConfirmarPago.disabled = true;
+        const textoOriginal = btnConfirmarPago.textContent;
+        btnConfirmarPago.textContent = 'Procesando...';
+
         const datosVenta = {
             usuario_id: 1, 
             metodo_pago: selectMetodoPagoModal.value,
@@ -280,7 +301,7 @@ if (btnConfirmarPago) {
         };
 
         try {
-            const respuesta = await fetch('http://localhost:3000/api/ventas', {
+            const respuesta = await fetch(`${API_URL}/ventas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datosVenta)
@@ -306,9 +327,14 @@ if (btnConfirmarPago) {
             renderizarCarrito();
             modalCobro.classList.remove('modal-activo');
 
+            if (inputEscanner) inputEscanner.focus();
+
         } catch (error) {
             console.error('Error de red al procesar el cobro:', error);
             Swal.fire('Error de Conexión', 'No se pudo conectar con el servidor para procesar el cobro.', 'error');
+        } finally {
+            btnConfirmarPago.disabled = false;
+            btnConfirmarPago.textContent = textoOriginal;
         }
     });
 }
@@ -343,6 +369,7 @@ if (btnConfirmarPrecio) {
         
         modalPrecioVariable.classList.remove('modal-activo');
         productoEnEspera = null;
+        if (inputEscanner) inputEscanner.focus();
     });
 }
 

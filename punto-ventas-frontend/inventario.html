@@ -44,6 +44,28 @@
                     <button id="btnNuevoProducto" class="btn-primario" style="margin-top: 0; width: auto;">+ Añadir Nuevo Producto</button>
                 </div>
             </header>
+
+            <div class="panel-estadisticas">
+                <div class="tarjeta-stat">
+                    <span class="stat-titulo">Productos</span>
+                    <strong class="stat-valor" id="statTotal">0</strong>
+                </div>
+
+                <div class="tarjeta-stat">
+                    <span class="stat-titulo">En stock</span>
+                    <strong class="stat-valor" id="statConStock">0</strong>
+                </div>
+
+                <div class="tarjeta-stat">
+                    <span class="stat-titulo">Stock Bajo</span>
+                    <strong class="stat-valor" id="statStockBajo">0</strong>
+                </div>
+
+                <div class="tarjeta-stat">
+                    <span class="stat-titulo">Agotados</span>
+                    <strong class="stat-valor" id="statAgotados">0</strong>
+                </div>
+            </div>
         
             <section class="panel-tabla">
                 <table>
@@ -54,12 +76,19 @@
                             <th>Categoría</th>
                             <th>Precio Compra</th>
                             <th>Precio Venta</th>
-                            <th>Stock Actual</th>
+                            <th style="text-align: center;">Stock Actual</th>
                             <th style="text-align: center;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tablaProductos"></tbody>
                 </table>
+
+                <div class="panel-paginacion">
+                    <span id="textoPaginacion">Mostrando 0-0 de 0</span>
+                    <div class="controles-paginacion" id="controlesPaginacion">
+
+                    </div>
+                </div>
             </section>
         </main>
     </div>

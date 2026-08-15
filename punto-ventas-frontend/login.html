@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso | SysRT</title>
+
+    <link rel="stylesheet" href="css/login.css">
+    
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-wrapper">
+            <img src="assets/logoSysRT.png" alt="Logo SysRT" class="logo">
+        </div>
+
+        <h2>Bienvenido a SysRT</h2>
+
+        <form id="form-login">
+            <div class="grupo-input">
+                <label for="input-usuario">Usuario</label>
+                <div class="input-con-icono">
+                    <svg class="icono-input" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <input type="text" id="input-usuario" placeholder="Ej. DiegoAdmin" required autocomplete="off" autofocus>
+                </div>
+            </div>
+
+            <div class="grupo-input">
+                <label for="input-password">Contraseña</label>
+                <div class="input-con-icono">
+                    <svg class="icono-input" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <input type="password" id="input-password" placeholder="Ingresa tu contraseña" required>
+                    <button type="button" id="btn-toggle-pass" class="btn-eye" title="Mostrar contraseña">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="icono-ojo"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-entrar">Acceder al Sistema</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

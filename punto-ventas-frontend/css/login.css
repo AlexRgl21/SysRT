@@ -1,0 +1,144 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f1f5f9; /* Un gris muy sutil para resaltar la tarjeta */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Animación del Logo */
+.logo-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    animation: float 4s ease-in-out infinite;
+}
+
+.logo {
+    width: 280px;
+    object-fit: contain;
+    transform: scale(1.8);
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+}
+
+h2 {
+    color: #1e293b;
+    font-size: 20px;
+    margin-bottom: 30px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Estilos del Formulario */
+#form-login {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.grupo-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.grupo-input label {
+    font-size: 14px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.input-con-icono {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.icono-input {
+    position: absolute;
+    left: 14px;
+    color: #94a3b8;
+}
+
+.input-con-icono input {
+    width: 100%;
+    padding: 12px 14px 12px 42px; /* Espacio para el ícono izquierdo */
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #1e293b;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-con-icono input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.input-con-icono input::placeholder {
+    color: #94a3b8;
+}
+
+/* Botón del Ojo para la contraseña */
+.btn-eye {
+    position: absolute;
+    right: 14px;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.btn-eye:hover {
+    color: #475569;
+}
+
+/* Botón Principal */
+.btn-entrar {
+    margin-top: 10px;
+    width: 100%;
+    padding: 14px;
+    background-color: #38bdf8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s;
+    box-shadow: 0 4px 6px rgba(56, 189, 248, 0.2);
+}
+
+.btn-entrar:hover {
+    background-color: #0284c7;
+}
+
+.btn-entrar:active {
+    transform: scale(0.98);
+}

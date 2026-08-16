@@ -1,18 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
-    const sidebar = document.getElementById('sidebarGlobal');
-
-    if (btnToggleSidebar && sidebar) {
-        btnToggleSidebar.addEventListener('click', () => {
-            sidebar.classList.toggle('sidebar-oculta');
-        });
-    } else {
-        console.error("No se encontró el botón o la sidebar en el HTML.");
-    }
-});
-
-
-// LOGICA SEGURIDAD EN BASE AL ROL 
+// 1. LÓGICA DE SEGURIDAD 
 const sesionString = localStorage.getItem('sysrt_sesion');
 
 if (!sesionString && !window.location.pathname.includes('login.html')) {
@@ -22,9 +8,7 @@ if (!sesionString && !window.location.pathname.includes('login.html')) {
 if (sesionString) {
     const usuarioActual = JSON.parse(sesionString);
     const rutaActual = window.location.pathname;
-
     const rutasAdmin = ['inventario.html', 'proveedores.html', 'dashboard.html'];
-
     const intentaEntrarAdmin = rutasAdmin.some(ruta => rutaActual.includes(ruta));
 
     if (intentaEntrarAdmin && usuarioActual.rol_id !== 1) {
@@ -32,22 +16,67 @@ if (sesionString) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (sesionString) {
-        const usuarioActual = JSON.parse(sesionString);
-        if (usuarioActual.rol_id !== 1) {
-            const sidebar = document.getElementById('sidebarGlobal');
+// FUNCION PARA CARGAR COMPONENTES HTML (Con Anti-Caché forzado)
+async function cargarComponentes(idContenedor, rutaArchivo) {
+    const contenedor = document.getElementById(idContenedor);
+    if (contenedor) {
+        try {
+            // Generamos un número único basado en la hora exacta
+            const version = new Date().getTime();
             
-            if (sidebar) {
-                sidebar.style.display = 'none';
+            // Forzamos al navegador a descargar el archivo fresco siempre
+            const respuesta = await fetch(`${rutaArchivo}?v=${version}`);
+            
+            if (respuesta.ok) {
+                const html = await respuesta.text();
+                contenedor.innerHTML = html;
             }
+        } catch (error) {
+            console.error(`Error cargando el componente ${rutaArchivo}:`, error);
         }
     }
-})
+}
 
+// INYECCION Y LOGICA DE INTERFAZ 
+document.addEventListener('DOMContentLoaded', async () => {
+    
+    await cargarComponentes('inyectar-sidebar', 'componentes/sidebar.html');
+    await cargarComponentes('inyectar-perfil', 'componentes/perfil.html');
 
-// LÓGICA DEL MENÚ DE PERFIL Y CERRAR SESIÓN
-document.addEventListener('DOMContentLoaded', () => {
+    const usuarioActual = sesionString ? JSON.parse(sesionString) : null;
+    
+    const rutaActualVentana = window.location.pathname;
+    const enlacesMenu = document.querySelectorAll('.sidebar nav ul li a.link-menu');
+    
+    enlacesMenu.forEach(enlace => {
+
+        const rutaEnlace = enlace.getAttribute('href');
+        
+        if (rutaActualVentana.includes(rutaEnlace)) {
+            enlace.parentElement.classList.add('activo');
+        } else {
+            enlace.parentElement.classList.remove('activo');
+        }
+    });
+    
+    // SIDEBAR
+    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+    const sidebar = document.getElementById('sidebarGlobal');
+
+    if (btnToggleSidebar && sidebar) {
+        btnToggleSidebar.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar-oculta');
+        });
+    }
+
+    // Ocultar Sidebar para Cajeros 
+    if (usuarioActual && usuarioActual.rol_id !== 1) {
+        if (sidebar) {
+            sidebar.style.display = 'none';
+        }
+    }
+
+    // Menú de Perfil y Cerrar Sesión 
     const btnAvatar = document.getElementById('btnAvatarPerfil');
     const dropdown = document.getElementById('dropdownPerfil');
     const btnCerrarSesion = document.getElementById('btnCerrarSesion');
@@ -55,15 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const nombreUI = document.getElementById('nombreUsuarioDropdown');
     const rolUI = document.getElementById('rolUsuarioDropdown');
 
-    if (sesionString) {
-        const usuarioActual = JSON.parse(sesionString);
+    if (usuarioActual) {
         if(nombreUI) nombreUI.textContent = usuarioActual.nombre;
         if(rolUI) rolUI.textContent = usuarioActual.rol_id === 1 ? 'Administrador' : 'Cajero';
     }
 
     if (btnAvatar && dropdown) {
         btnAvatar.addEventListener('click', (evento) => {
-            evento.stopPropagation(); // Evita que se cierre instantáneamente
+            evento.stopPropagation(); 
             dropdown.classList.toggle('dropdown-activo');
         });
 
@@ -74,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Lógica del botón cerrar sesión
+    // Botón Salir
     if (btnCerrarSesion) {
         btnCerrarSesion.addEventListener('click', () => {
             Swal.fire({

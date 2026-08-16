@@ -172,6 +172,7 @@ body {
 .perfil-usuario {
     position: relative;
     display: inline-block;
+    z-index: 9999;
 }
 
 .avatar-btn {

@@ -127,9 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }).showToast();
         }
     });
-});
 
-//LOGICA DE LA TABLA DIRECTORIO
+    //LOGICA PARA CARGAR EL DIRETORIO
     const bodyProveedores = document.getElementById('bodyProveedores');
 
     const cargarDirectorio = async () => {
@@ -171,3 +170,87 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarDirectorio();
 
 
+// LOGICA DE LA AGENDA DEL DIA 
+    const contenedorListaAgenda = document.getElementById('contenedorListaAgenda');
+
+    const cargarAgenda = async () => {
+        try {
+            const respuesta = await fetch('http://localhost:3000/api/agenda');
+            const visitas = await respuesta.json();
+
+            if (!respuesta.ok) {
+                throw new Error(visitas.error || 'Error interno en el servidor');
+            }
+
+            contenedorListaAgenda.innerHTML = '';
+
+            if (visitas.length === 0) {
+                contenedorListaAgenda.innerHTML = `
+                        <div style="padding: 30px; text-align: center;">
+                            <p style="color: #94a3b8; margin-bottom: 15px;">No hay visitas programadas en la libreta de hoy.</p>
+                            <button id="btnGenerarAgenda" class="btn-primario" style="width: auto; padding: 10px 20px;">Generar Agenda de Hoy</button>
+                        </div>`;
+                        
+                document.getElementById('btnGenerarAgenda').addEventListener('click', async () => {
+                    try {
+                        const res = await fetch('http://localhost:3000/api/agenda/generar', { method: 'POST' });
+                        if (res.ok) {
+                            cargarAgenda(); 
+                        }
+                    } catch (error) {
+                        console.error('Error al generar:', error);
+                    }
+                });
+            }
+
+            visitas.forEach(visita => {
+                const div = document.createElement('div');
+
+                div.className = `item-agenda ${visita.asistio ? 'visitado' : ''}`;
+
+                div.innerHTML = `
+                        <input type="checkbox" class="checkbox-agenda" ${visita.asistio ? 'checked' : ''} data-id="${visita.id}">
+                        <div class="info-agenda">
+                            <span class="nombre-proveedor-agenda">${visita.nombre}</span>
+                            <input type="text" class="nota-agenda" placeholder="Añadir encargo o nota rápida (Ej. Traer 2 cajas extra)..." value="${visita.notas || ''}">
+                        </div>
+                    `;
+
+                    const checkbox = div.querySelector('.checkbox-agenda');
+                    const inputNota = div.querySelector('.nota-agenda');
+
+                    checkbox.addEventListener('change', async (e) => {
+                        const asistio = e.target.checked;
+
+                        if(asistio) div.classList.add('visitado');
+                        else div.classList.remove('visitado')  
+
+                        await actualizarVisita(visita.id, asistio, inputNota.value);
+                    });
+
+                    inputNota.addEventListener('change', async (e) => {
+                        await actualizarVisita(visita.id, checkbox.checked, e.target.value);
+                    });
+
+                    contenedorListaAgenda.appendChild(div);
+            });
+        } catch (error) {
+            console.error('Error al cargar la agenda:', error);
+            contenedorListaAgenda.innerHTML = `<p style="padding: 20px; color: #ef4444; text-align: center;">Error al cargar la agenda del día.</p>`;
+        }
+    };
+
+    const actualizarVisita = async (id, asistio, notas) => {
+        try {
+            await fetch(`http://localhost:3000/api/agenda/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify ({ asistio, notas })
+            }); 
+        } catch (error) {
+            console.error('Error al actualizar visita', error);
+        }
+    };
+
+    cargarAgenda();
+});

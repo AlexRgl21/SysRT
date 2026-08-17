@@ -69,7 +69,24 @@
             <div id="tab-directorio" class="tab-contenido">
                 <section class="panel-tabla">
                     <h2>Directorio de Proveedores</h2>
-                    <p style="color: #64748b; margin-top: 10px;">Cargando...</p>
+                    
+                    <div style="overflow-x: auto; margin-top: 20px;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e2e8f0; color: #475569;">
+                                    <th style="padding: 12px 15px;">Proveedor</th>
+                                    <th style="padding: 12px 15px;">Teléfono</th>
+                                    <th style="padding: 12px 15px;">Días de Visita</th>
+                                </tr>
+                            </thead>
+                            
+                            <tbody id="bodyProveedores">
+                                <tr>
+                                    <td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;;">Cargando Directorio...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </section>
             </div>
 
@@ -95,6 +112,39 @@
             </div>
 
         </main>
+    </div>
+
+    <div id="modalProveedor" class="modal-overlay" style="display: none;">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h3>Registrar Nuevo Proveedor</h3>
+                <button id="btnCerrarModalProveedor" class="btn-cerrar" title="Cerrar">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form id="formNuevoProveedor">
+                    <div class="form-grupo">
+                        <label for="provNombre">Nombre de la Empresa / Repartidor *</label>
+                        <input type="text" id="provNombre" required placeholder="Ej. Coca Cola">
+                    </div>
+
+                    <div class="form-grupo">
+                        <label for="provTelefono">Teléfono</label>
+                        <input type="text" id="provTelefono" placeholder="Ej. 4191221100">
+                    </div>
+
+                    <div class="form-grupo">
+                        <label for="provDias">Días de Visita Programada</label>
+                        <input type="text" id="provDias" placeholder="Ej. Lunes y Jueves">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" id="btnCancelarProveedor" class="btn-secundario">Cancelar</button>
+                        <button type="submit" class="btn-primario" style="margin-top: 0; width: auto;">Guardar Proveedor</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>

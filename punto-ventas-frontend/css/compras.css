@@ -189,11 +189,9 @@
 
 
 /* Estilos de la Agenda */
-/* Estilos de la Agenda */
 .item-agenda {
     display: flex;
-    align-items: center;
-    padding: 15px 20px;
+    flex-direction: column;
     border-bottom: 1px solid #e2e8f0;
     transition: all 0.2s ease;
     background-color: #ffffff;
@@ -203,7 +201,16 @@
     border-bottom: none;
 }
 
-.item-agenda:hover {
+.agenda-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.agenda-header:hover {
     background-color: #f8fafc;
 }
 
@@ -215,12 +222,6 @@
     accent-color: #10b981;
 }
 
-.info-agenda {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
 .nombre-proveedor-agenda {
     font-size: 16px;
     font-weight: 600;
@@ -228,22 +229,40 @@
     transition: color 0.2s;
 }
 
+.icono-desplegable {
+    margin-left: auto;
+    color: #94a3b8;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+/* El contenedor del pedido (oculto por defecto) */
+.agenda-detalle {
+    padding: 0 20px 20px 57px; /* Alineado para saltar el checkbox */
+    display: none; /* Inicia oculto */
+    background-color: #fafafa;
+}
+
 .nota-agenda {
-    border: none;
-    background: transparent;
-    font-size: 13px;
-    color: #64748b;
-    outline: none;
-    margin-top: 4px;
     width: 100%;
-    font-style: italic;
+    min-height: 70px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    resize: vertical;
+    font-size: 14px;
+    color: #475569;
+    font-family: inherit;
+    box-sizing: border-box;
 }
 
-.nota-agenda::placeholder {
-    color: #cbd5e1;
+.nota-agenda:focus {
+    border-color: #38bdf8;
+    outline: none;
 }
 
-.item-agenda.visitado {
+/* Efecto al marcar como asistido */
+.item-agenda.visitado .agenda-header {
     background-color: #f1f5f9;
     opacity: 0.7;
 }

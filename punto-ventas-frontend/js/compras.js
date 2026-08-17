@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p style="color: #94a3b8; margin-bottom: 15px;">No hay visitas programadas en la libreta de hoy.</p>
                             <button id="btnGenerarAgenda" class="btn-primario" style="width: auto; padding: 10px 20px;">Generar Agenda de Hoy</button>
                         </div>`;
-                        
+
                 document.getElementById('btnGenerarAgenda').addEventListener('click', async () => {
                     try {
                         const res = await fetch('http://localhost:3000/api/agenda/generar', { method: 'POST' });
@@ -205,34 +205,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
             visitas.forEach(visita => {
                 const div = document.createElement('div');
-
                 div.className = `item-agenda ${visita.asistio ? 'visitado' : ''}`;
 
                 div.innerHTML = `
-                        <input type="checkbox" class="checkbox-agenda" ${visita.asistio ? 'checked' : ''} data-id="${visita.id}">
-                        <div class="info-agenda">
+                        <div class="agenda-header">
+                            <input type="checkbox" class="checkbox-agenda" ${visita.asistio ? 'checked' : ''} data-id="${visita.id}">
                             <span class="nombre-proveedor-agenda">${visita.nombre}</span>
-                            <input type="text" class="nota-agenda" placeholder="Añadir encargo o nota rápida (Ej. Traer 2 cajas extra)..." value="${visita.notas || ''}">
+                            <span class="icono-desplegable">▼</span>
+                        </div>
+                        <div class="agenda-detalle">
+                            <label style="display: block; font-size: 13px; color: #64748b; margin-bottom: 8px; font-weight: 500;">Asignar pedido o notas (Se guarda automáticamente):</label>
+                            <textarea class="nota-agenda" placeholder="Ej. Traer 2 cajas de mantecadas y 1 pan blanco...">${visita.notas || ''}</textarea>
                         </div>
                     `;
 
-                    const checkbox = div.querySelector('.checkbox-agenda');
-                    const inputNota = div.querySelector('.nota-agenda');
+                const checkbox = div.querySelector('.checkbox-agenda');
+                const inputNota = div.querySelector('.nota-agenda');
+                const header = div.querySelector('.agenda-header');
+                const detalle = div.querySelector('.agenda-detalle');
+                const icono = div.querySelector('.icono-desplegable');
 
-                    checkbox.addEventListener('change', async (e) => {
-                        const asistio = e.target.checked;
+                if (visita.notas && visita.notas.trim() !== '') {
+                    detalle.style.display = 'block';
+                    icono.style.transform = 'rotate(180deg)';
+                }
 
-                        if(asistio) div.classList.add('visitado');
-                        else div.classList.remove('visitado')  
+                header.addEventListener('click', (e) => {
+                    if(e.target === checkbox) return; 
 
-                        await actualizarVisita(visita.id, asistio, inputNota.value);
-                    });
+                    const estaAbierto = detalle.style.display === 'block';
+                    detalle.style.display = estaAbierto ? 'none' : 'block';
+                    icono.style.transform = estaAbierto ? 'rotate(0deg)' : 'rotate(180deg)';
+                });
 
-                    inputNota.addEventListener('change', async (e) => {
-                        await actualizarVisita(visita.id, checkbox.checked, e.target.value);
-                    });
+                checkbox.addEventListener('change', async (e) => {
+                    const asistio = e.target.checked;
+                    if(asistio) div.classList.add('visitado');
+                    else div.classList.remove('visitado');  
 
-                    contenedorListaAgenda.appendChild(div);
+                    await actualizarVisita(visita.id, asistio, inputNota.value);
+                });
+
+                inputNota.addEventListener('change', async (e) => {
+                    await actualizarVisita(visita.id, checkbox.checked, e.target.value);
+                    
+                    Toastify({
+                        text: "Pedido guardado",
+                        duration: 1500,
+                        gravity: "top",
+                        position: "center",
+                        style: { background: "#10b981", borderRadius: "8px" }
+                    }).showToast();
+                });
+
+                contenedorListaAgenda.appendChild(div);
             });
         } catch (error) {
             console.error('Error al cargar la agenda:', error);

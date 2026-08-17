@@ -279,4 +279,45 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     cargarAgenda();
+
+
+    //REGISTRO DE COMPRAS
+    const selectProveedor = document.getElementById('compraProveedor');
+    const selectEstatus = document.getElementById('compraEstatus');
+    const divSaldoPendiente = document.getElementById('divSaldoPendiente');
+    const inputSaldo = document.getElementById('compraSaldo');
+
+
+    selectEstatus.addEventListener('change', (e) => {
+        if(e.target.value === 'pendiente') {
+            divSaldoPendiente.style.display = 'block';
+            inputSaldo.setAttribute('required', 'true');
+        } else {
+            divSaldoPendiente.style.display = 'none';
+            inputSaldo.removeAttribute('required');
+            inputSaldo.value = '';
+        }
+    });
+
+    const cargarProveedoresSelect = async () => {
+        try {
+            const respuesta = await fetch('http://localhost:3000/api/proveedores');
+            const proveedores = await respuesta.json();
+
+            selectProveedor.innerHTML = '<option value="">Seleccione un proveedor...</option>';
+
+            proveedores.forEach(prov => {
+                const option = document.createElement('option');
+                option.value = prov.id;
+                option.textContent = prov.nombre;
+                selectProveedor.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error al cargar proveedores', error);
+            selectProveedor.innerHTML = '<option value="">Error al cargar proveedores</option>';
+        }
+    };
+
+    cargarProveedoresSelect();
+
 });

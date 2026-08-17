@@ -54,14 +54,38 @@ CREATE TABLE codigos_barras (
 CREATE TABLE proveedores (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL, 
-    telefono VARCHAR(25)
+    telefono VARCHAR(25),
+    dias_visita VARCHAR(50) NULL, 
+    activo BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE compras (
     id SERIAL PRIMARY KEY,
     proveedor_id INT REFERENCES proveedores(id), 
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    total_compra DECIMAL(10,2) NOT NULL
+    total_compra DECIMAL(10,2) NOT NULL,
+    estatus_pago VARCHAR(20) DEFAULT 'pagada', 
+    saldo_pendiente DECIMAL(10,2) DEFAULT 0.00,
+    notas TEXT
+);
+
+CREATE TABLE abonos_compras (
+    id SERIAL PRIMARY KEY,
+    compra_id INT REFERENCES compras(id) NOT NULL,
+    usuario_id INT REFERENCES usuarios(id), 
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    monto DECIMAL(10,2) NOT NULL,
+    metodo_pago VARCHAR(20) DEFAULT 'efectivo'
+);
+
+CREATE TABLE registro_visitas (
+    id SERIAL PRIMARY KEY,
+    proveedor_id INT REFERENCES proveedores(id) NOT NULL,
+    fecha_visita DATE NOT NULL DEFAULT CURRENT_DATE,
+    asistio BOOLEAN DEFAULT FALSE,
+    notas TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (proveedor_id, fecha_visita) 
 );
 
 CREATE TABLE ventas (
@@ -107,5 +131,5 @@ CREATE INDEX idx_compras_fecha ON compras(fecha);
 -- 4. Índice para cuando el cajero busque un producto tecleando el nombre en lugar de escanearlo
 CREATE INDEX idx_productos_nombre ON productos(nombre);
 
--- 5. NUEVO: Índice para filtrar rápidamente las ventas de un turno específico
+-- 5. Índice para filtrar rápidamente las ventas de un turno específico
 CREATE INDEX idx_ventas_sesion ON ventas(sesion_caja_id);

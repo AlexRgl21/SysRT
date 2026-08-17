@@ -5,7 +5,7 @@ const obtenerAgendaDia = async (req, res) => {
     try {
         const query = `
             SELECT rv.id, rv.proveedor_id, p.nombre, rv.asistio, rv.notas
-            FROM registro_visitas rv
+            FROM registro_visita rv
             JOIN proveedores p ON rv.proveedor_id = p.id
             WHERE rv.fecha_visita = CURRENT_DATE
             ORDER BY p.nombre ASC
@@ -24,7 +24,7 @@ const actualizarVisita = async (req, res) => {
         const { asistio, notas } = req.body;
 
         const query = `
-            UPDATE registro_visitas
+            UPDATE registro_visita
             SET asistio = $1, notas = COALESCE($2, notas)
             WHERE id = $3
             RETURNING *
@@ -39,6 +39,29 @@ const actualizarVisita = async (req, res) => {
     } catch (error) {
         console.error('Error al actualizar la visita:', error);
         res.status(500).json({ error: 'Error interno al actualizar la agenda' });
+    }
+};
+
+// AGENDA DE HOY 
+const generarAgendaHoy = async (req, res) => {
+    try {
+        const query = `
+            INSERT INTO registro_visita (proveedor_id, fecha_visita)
+            SELECT id, CURRENT_DATE
+            FROM proveedores
+            WHERE activo = TRUE
+            ON CONFLICT (proveedor_id, fecha_visita) DO NOTHING
+            RETURNING id;
+        `;
+        const { rows } = await pool.query(query);
+        
+        res.json({ 
+            mensaje: 'Agenda generada exitosamente', 
+            nuevosRegistros: rows.length 
+        });
+    } catch (error) {
+        console.error('Error al generar la agenda de hoy:', error);
+        res.status(500).json({ error: 'Error interno al generar la agenda' });
     }
 };
 
@@ -76,6 +99,7 @@ const crearProveedor = async (req, res) => {
 module.exports = {
     obtenerAgendaDia, 
     actualizarVisita,
+    generarAgendaHoy, 
     obtenerProveedores, 
     crearProveedor
 };

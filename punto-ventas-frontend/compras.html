@@ -139,12 +139,31 @@
             </div>
 
             <div id="tab-reportes" class="tab-contenido">
-                <section class="panel-tabla">
-                    <h2>Historial de Compras</h2>
-                    <p style="color: #64748b; margin-top: 10px;">Cargando...</p>
+                <section class="panel-tabla" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+                    <h2 style="margin-bottom: 20px; border: none;">Resumen de tu Negocio</h2>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        
+                        <div style="background: #fff0f2; border: 1px solid #ffe4e6; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 4px 6px rgba(225, 29, 72, 0.05);">
+                            <p style="color: #e11d48; margin: 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Total que debes hoy</p>
+                            <h3 id="repDeudaTotal" style="color: #be123c; font-size: 38px; margin: 15px 0; font-weight: 800;">$0.00</h3>
+                            <p id="repFacturasPendientes" style="color: #fb7185; margin: 0; font-size: 14px; font-weight: 500;">En 0 facturas sin pagar</p>
+                        </div>
+
+                        <div style="background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 4px 6px rgba(22, 163, 74, 0.05);">
+                            <p style="color: #16a34a; margin: 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Comprado este mes</p>
+                            <h3 id="repGastoMes" style="color: #15803d; font-size: 38px; margin: 15px 0; font-weight: 800;">$0.00</h3>
+                            <p style="color: #4ade80; margin: 0; font-size: 14px; font-weight: 500;">Surtido de mercancía</p>
+                        </div>
+
+                        <div style="background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.05);">
+                            <p style="color: #2563eb; margin: 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Le compras más a</p>
+                            <h3 id="repProveedorTop" style="color: #1d4ed8; font-size: 26px; margin: 15px 0; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">-</h3>
+                            <p style="color: #60a5fa; margin: 0; font-size: 14px; font-weight: 500;">Tu proveedor principal</p>
+                        </div>
+                    </div>
                 </section>
             </div>
-
         </main>
     </div>
 

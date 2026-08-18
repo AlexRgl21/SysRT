@@ -138,6 +138,63 @@ const obtenerCompras = async (req, res) => {
     }
 };
 
+
+// OBTENER DEUDAS 
+const obtenerDeudas = async (req, res) => {
+    try{
+        const query = `
+            SELECT c.id, c.fecha, p.nombre AS proveedor, c.total_compra, c.saldo_pendiente
+            FROM compras c
+            JOIN proveedores p ON c.proveedor_id = p.id
+            WHERE c.estatus_pago = 'pendiente' AND c.saldo_pendiente > 0
+            ORDER BY c.fecha ASC
+        `;
+        const { rows } = await pool.query(query);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error al obtener deudas:', error);
+        res.status(500).json({ error: 'Error interno al cargar las deudas' });
+    }
+};
+
+// REGISTRAR ABONO
+const registrarAbono = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { monto_abono } = req.body;
+
+        const queryConsulta = 'SELECT saldo_pendiente FROM compras WHERE id = $1';
+        const { rows: compras } = await pool.query(queryConsulta, [id]);
+
+        if (compras.length === 0) {
+            return res.status(404).json({ error: 'Factura no encontrada' });
+        }
+
+        const saldoActual = parseFloat(compras[0].saldo_pendiente);
+        const abono = parseFloat(monto_abono);
+
+        if (abono > saldoActual) {
+            return res.status(400).json({ error: 'El abono no puede ser mayor al saldo que debes.' });
+        }
+
+        const nuevoSaldo = saldoActual - abono;
+        const nuevoEstatus = nuevoSaldo <= 0 ? 'pagada' : 'pendiente';
+
+        const queryUpdate = `
+            UPDATE compras 
+            SET saldo_pendiente = $1, estatus_pago = $2
+            WHERE id = $3
+            RETURNING id, saldo_pendiente, estatus_pago
+        `;
+        const { rows: actualizadas } = await pool.query(queryUpdate, [nuevoSaldo, nuevoEstatus, id]);
+
+        res.json({ mensaje: 'Abono registrado correctamente', compra: actualizadas[0] });
+    } catch (error) {
+        console.error('Error al registrar el abono', error);
+        res.status(500).json({ error: 'Error interno al procesar el pago' });
+    }
+};
+
 module.exports = {
     obtenerAgendaDia, 
     actualizarVisita,
@@ -145,5 +202,7 @@ module.exports = {
     obtenerProveedores, 
     crearProveedor,
     registrarCompra,
-    obtenerCompras
+    obtenerCompras, 
+    obtenerDeudas,
+    registrarAbono
 };

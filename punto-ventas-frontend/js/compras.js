@@ -422,6 +422,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (respuesta.ok) {
                 cerrarModalCompra();
                 cargarCompras();
+                cargarResumenReportes();
+                cargarDeudas(); 
                 divSaldoPendiente.style.display = 'none';
                 inputSaldo.required = false;
 
@@ -535,7 +537,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (respuesta.ok) {
                 cerrarModalAbono();
                 cargarDeudas(); 
-                cargarCompras(); 
+                cargarCompras();
+                cargarResumenReportes(); 
 
                 Toastify({
                     text: "¡Abono registrado exitosamente!",
@@ -563,5 +566,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     cargarDeudas();
+
+
+    // MODULO DE REPORTES (DASHBOARD)
+    const cargarResumenReportes = async () => {
+        try {
+            const respuesta = await fetch('http://localhost:3000/api/reportes/resumen');
+            const datos = await respuesta.json();
+
+            const formatoMoneda = (cantidad) => `$${parseFloat(cantidad || 0).toFixed(2)}`;
+
+            document.getElementById('repDeudaTotal').textContent = formatoMoneda(datos.deuda_total);
+            document.getElementById('repFacturasPendientes').textContent = `En ${datos.facturas_pendientes || 0} facturas sin pagar`;
+            document.getElementById('repGastoMes').textContent = formatoMoneda(datos.gasto_mes);
+            document.getElementById('repProveedorTop').textContent = datos.proveedor_top;
+
+        } catch (error) {
+            console.error('Error al cargar el resumen de reportes:', error);
+            document.getElementById('repProveedorTop').textContent = 'Error al cargar';
+        }
+    };
+
+    cargarResumenReportes();
 
 });

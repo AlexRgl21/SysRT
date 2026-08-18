@@ -96,10 +96,54 @@ const crearProveedor = async (req, res) => {
     }
 };
 
+// REGISTRO DE COMPRAS
+const registrarCompra = async (req, res) => {
+    try {
+        const { proveedor_id, total_compra, estatus_pago, saldo_pendiente, notas } = req.body;
+
+        const saldoFinal = estatus_pago === 'pagada' ? 0 : saldo_pendiente;
+
+        const query = `
+            INSERT INTO compras (proveedor_id, total_compra, estatus_pago, saldo_pendiente, notas)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, fecha, total_compra, estatus_pago
+        `;
+        const { rows } = await pool.query(query, [proveedor_id, total_compra, estatus_pago, saldoFinal, notas]);
+
+        res.status(201).json({
+            mensaje: 'Compra registradaa con éxito.',
+            compra: rows[0]
+        });
+    } catch (error) {
+        console.error('Error al registrar compra:', error);
+        res.status(500).json({ error: 'Error interno al guardar la factura' });
+    }
+};
+
+// OBTENER EL HISTORIAL DE COMPRAS
+const obtenerCompras = async (req, res) => {
+    try {
+        const query = `
+            SELECT c.id, c.fecha, p.nombre AS proveedor, c.total_compra, c.estatus_pago, c.saldo_pendiente
+            FROM compras c
+            JOIN proveedores p ON c.proveedor_id = p.id
+            ORDER BY c.fecha DESC, c.id DESC
+        `;
+
+        const { rows } = await pool.query(query);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error al obtener el historial de compras:', error);
+        res.status(500).json({ error: 'Error interno al cargar las compras '});
+    }
+};
+
 module.exports = {
     obtenerAgendaDia, 
     actualizarVisita,
     generarAgendaHoy, 
     obtenerProveedores, 
-    crearProveedor
+    crearProveedor,
+    registrarCompra,
+    obtenerCompras
 };

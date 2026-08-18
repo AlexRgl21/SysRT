@@ -116,8 +116,25 @@
 
             <div id="tab-deudas" class="tab-contenido">
                 <section class="panel-tabla">
-                    <h2>Control de Saldos y Pagos Parciales</h2>
-                    <p style="color: #64748b; margin-top: 10px;">Cargando...</p>
+                    <h2>Cuentas por Pagar (pendientes)</h2>
+
+                    <div style="overflow-x: auto; margin-top: 20px;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e2e8f0; color: #475569;">
+                                    <th style="padding: 12px 15px;">Fecha</th>
+                                    <th style="padding: 12px 15px;">Proveedor</th>
+                                    <th style="padding: 12px 15px;">Total Factura</th>
+                                    <th style="padding: 12px 15px;">Saldo Pendiente</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bodyDeudas">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 20px; color: #94a3b8;">Cargando Cuentas por Pagar...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </section>
             </div>
 
@@ -210,6 +227,36 @@
                     <div class="modal-footer" style="margin-top: 25px;">
                         <button type="button" id="btnCancelarCompra" class="btn-secundario">Cancelar</button>
                         <button type="submit" class="btn-primario" style="margin-top: 0; width: auto;">Registrar Compra</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalAbono" class="modal-overlay" style="display: none;">
+        <div class="modal-contenido" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Registrar Abono</h3>
+                <button id="btnCerrarModalAbono" class="btn-cerrar" title="Cerrar">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form id="formNuevoAbono">
+                    <div class="form-grupo">
+                        <label for="abonoFactura">Seleccionar Factura Pendiente *</label>
+                        <select id="abonoFactura" required style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background-color: #fff;">
+                            <option value="">Cargando facturas...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-grupo" style="margin-top: 15px;">
+                        <label for="abonoMonto">Monto a Abonar ($) *</label>
+                        <input type="number" id="abonoMonto" step="0.01" min="0.01" required placeholder="0.00" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none;">
+                    </div>
+
+                    <div class="modal-footer" style="margin-top: 25px;">
+                        <button type="button" id="btnCancelarAbono" class="btn-secundario">Cancelar</button>
+                        <button type="submit" class="btn-primario" style="margin-top: 0; width: auto;">Guardar Abono</button>
                     </div>
                 </form>
             </div>

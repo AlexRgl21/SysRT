@@ -59,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const tabActiva = document.querySelector('.tab-btn.activo').getAttribute('data-target');
 
         if (tabActiva === 'tab-directorio') {
+            document.getElementById('provId').value = ''; 
+            document.getElementById('tituloModalProveedor').textContent = 'Registrar Nuevo Proveedor';
             modalProveedor.style.display = 'flex';
             document.getElementById('provNombre').focus();
         } else if (tabActiva === 'tab-compras') {
@@ -93,22 +95,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === modalAbono) cerrarModalAbono();
     });
 
+    // FORMULARIO PROVEEDOR 
     formNuevoProveedor.addEventListener('submit', async (e) => {
         e.preventDefault(); 
 
-        const nuevoProveedor = {
+        const idProveedor = document.getElementById('provId').value;
+        const datosProveedor = {
             nombre: document.getElementById('provNombre').value.trim(),
             telefono: document.getElementById('provTelefono').value.trim(),
             dias_visita: document.getElementById('provDias').value.trim()
         };
 
+        const url = idProveedor 
+            ? `http://localhost:3000/api/proveedores/${idProveedor}` 
+            : 'http://localhost:3000/api/proveedores';
+        
+        const metodo = idProveedor ? 'PUT' : 'POST';
+
         try {
-            const respuesta = await fetch('http://localhost:3000/api/proveedores', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(nuevoProveedor)
+            const respuesta = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosProveedor)
             });
 
             const data = await respuesta.json();
@@ -116,39 +124,43 @@ document.addEventListener('DOMContentLoaded', () => {
             if (respuesta.ok) {
                 cerrarModalProveedor();
                 cargarDirectorio();
+                cargarProveedoresSelect(); 
                 
                 Toastify({
-                    text: "¡Proveedor registrado con éxito!",
+                    text: idProveedor ? "¡Proveedor actualizado!" : "¡Proveedor registrado con éxito!",
                     duration: 3000,
                     gravity: "top",
                     position: "center",
-                    style: {
-                        background: "#10b981", 
-                        borderRadius: "8px"
-                    }
+                    style: { background: "#10b981", borderRadius: "8px" }
                 }).showToast();
-                
             } else {
                 throw new Error(data.error || 'Error al guardar');
             }
-
         } catch (error) {
             console.error('Error:', error);
             Toastify({
-                text: "Ocurrió un error al guardar el proveedor.",
+                text: "Ocurrió un error al guardar.",
                 duration: 3000,
-                gravity: "top",
-                position: "center",
-                style: {
-                    background: "#ef4444", 
-                    borderRadius: "8px"
-                }
+                gravity: "top", position: "center",
+                style: { background: "#ef4444", borderRadius: "8px" }
             }).showToast();
         }
     });
 
-    //LOGICA PARA CARGAR EL DIRETORIO
+    //LOGICA PARA CARGAR EL DIRETORIO (BUSCADOR Y ACCIONES)
     const bodyProveedores = document.getElementById('bodyProveedores');
+    const inputBuscadorDirectorio = document.getElementById('buscadorDirectorio');
+
+    inputBuscadorDirectorio.addEventListener('input', (e) => {
+        const termino = e.target.value.toLowerCase();
+        const filas = bodyProveedores.querySelectorAll('tr');
+        
+        filas.forEach(fila => {
+            const textoFila = fila.textContent.toLowerCase();
+            fila.style.display = textoFila.includes(termino) ? '' : 'none';
+        });
+    });
+
 
     const cargarDirectorio = async () => {
         try {
@@ -156,13 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const proveedores = await respuesta.json();
 
             bodyProveedores.innerHTML = '';
+            inputBuscadorDirectorio.value = ''; 
 
             if (proveedores.length === 0) {
-                bodyProveedores.innerHTML = `
-                    <tr>
-                        <td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">No hay proveedores registrados.</td>
-                    </tr>`;
-                    return;
+                bodyProveedores.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #94a3b8;">No hay proveedores registrados.</td></tr>`;
+                return;
             }
 
             proveedores.forEach(prov => {
@@ -173,18 +183,84 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="padding: 15px; font-weight: 500; color: #1e293b;">${prov.nombre}</td>
                     <td style="padding: 15px; color: #475569;">${prov.telefono || '-'}</td>
                     <td style="padding: 15px; color: #475569;">${prov.dias_visita || '-'}</td>
-                `;
+                    <td style="padding: 15px; text-align: right;">
 
+                        <button class="btn-editar-prov" style="background: none; border: none; cursor: pointer; margin-right: 15px; display: inline-flex; align-items: center; justify-content: center;" title="Editar" data-id="${prov.id}" data-nombre="${prov.nombre}" data-telefono="${prov.telefono || ''}" data-dias="${prov.dias_visita || ''}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8ba0b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onmouseover="this.style.stroke='#3b82f6'" onmouseout="this.style.stroke='#8ba0b2'" style="transition: 0.2s;">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        
+                        <button class="btn-eliminar-prov" style="background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;" title="Eliminar" data-id="${prov.id}" data-nombre="${prov.nombre}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8ba0b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onmouseover="this.style.stroke='#ef4444'" onmouseout="this.style.stroke='#8ba0b2'" style="transition: 0.2s;">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                        </button>
+                    </td>
+                `;
                 bodyProveedores.appendChild(tr);
             });
         } catch (error) {
             console.error('Error al cargar los proveedores.', error);
-            bodyProveedores.innerHTML = `
-                <tr>
-                    <td colspan="3" style="text-align: center; padding: 20px; color: #ef4444;">Error al cargar el directorio.</td>
-                </tr>`;
+            bodyProveedores.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #ef4444;">Error al cargar el directorio.</td></tr>`;
         }
     };
+
+    bodyProveedores.addEventListener('click', async (e) => {
+        const btnEditar = e.target.closest('.btn-editar-prov');
+        const btnEliminar = e.target.closest('.btn-eliminar-prov');
+
+        if (btnEditar) {
+            document.getElementById('provId').value = btnEditar.dataset.id;
+            document.getElementById('provNombre').value = btnEditar.dataset.nombre;
+            document.getElementById('provTelefono').value = btnEditar.dataset.telefono;
+            document.getElementById('provDias').value = btnEditar.dataset.dias;
+            document.getElementById('tituloModalProveedor').textContent = 'Editar Proveedor';
+            modalProveedor.style.display = 'flex';
+        }
+
+        if (btnEliminar) {
+            const id = btnEliminar.dataset.id;
+            const nombre = btnEliminar.dataset.nombre;
+
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `Vas a eliminar a ${nombre} del directorio. (No se borrarán sus facturas pasadas).`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                borderRadius: '12px'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch(`http://localhost:3000/api/proveedores/${id}`, { method: 'DELETE' });
+                        if (res.ok) {
+                            cargarDirectorio();
+                            cargarProveedoresSelect(); 
+                            
+                            Toastify({
+                                text: "Proveedor eliminado exitosamente", 
+                                duration: 3000, 
+                                gravity: "top", 
+                                position: "center",
+                                style: { background: "#10b981", borderRadius: "8px" }
+                            }).showToast();
+                        }
+                    } catch (error) {
+                        console.error('Error al eliminar', error);
+                        Swal.fire('Error', 'No se pudo eliminar el proveedor', 'error');
+                    }
+                }
+            });
+        }
+    });
 
     cargarDirectorio();
 

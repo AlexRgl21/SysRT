@@ -250,6 +250,42 @@ const obtenerResumenReportes = async (req, res) => {
     } 
 };
 
+// ACTUALIZAR PROOVEDOR
+const actualizarProveedor = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre, telefono, dias_visita } = req.body;
+
+        const query = `
+            UPDATE proveedores
+            SET nombre = $1, telefono = $2, dias_visita = $3
+            WHERE id = $4 RETURNING *
+        `;
+
+        const { rows } = await pool.query(query, [nombre, telefono, dias_visita, id ]);
+
+        if (rows.length === 0) return res.status(404).json({ error: 'Proveedor no encontrado' });
+    } catch (error) {
+        console.error('Error al actualizar proveedor:', error);
+        res.status(500).json({ error: 'Error interno al actualizar' });
+    }
+};
+
+// ELIMINAR PROVEEDOR
+const eliminarProveedor = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const query = 'UPDATE proveedores SET activo = FALSE WHERE id = $1 RETURNING *';
+        const { rows } = await pool.query(query, [id]);
+
+        if (rows.length === 0) return res.status(404).json({ error: 'Proveedor no encontrado' });
+        res.json({ mensaje: 'Proveedor eliminado del directorio' });
+    } catch (error) {
+        console.error('Error al eliminar proveedor:', error);
+        res.status(500).json({ error: 'Error interno al eliminar' });
+    }
+};
+
 module.exports = {
     obtenerAgendaDia, 
     actualizarVisita,
@@ -260,5 +296,7 @@ module.exports = {
     obtenerCompras, 
     obtenerDeudas,
     registrarAbono,
-    obtenerResumenReportes
+    obtenerResumenReportes,
+    actualizarProveedor,
+    eliminarProveedor
 };

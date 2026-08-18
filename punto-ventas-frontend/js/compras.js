@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tabActivaInicial.click();
     }
 
-    // MODAL NUEVO PROVEEDOR
+    // MODALES
     const modalProveedor = document.getElementById('modalProveedor');
     const formNuevoProveedor = document.getElementById('formNuevoProveedor');
     const btnCerrarModalProveedor = document.getElementById('btnCerrarModalProveedor');
@@ -64,29 +64,33 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (tabActiva === 'tab-compras') {
             modalCompra.style.display = 'flex';
             document.getElementById('compraProveedor').focus();
+        } else if (tabActiva === 'tab-deudas') {
+            modalAbono.style.display = 'flex';
+            cargarFacturasAbonoSelect();
+            document.getElementById('abonoFactura').focus();
         }
     });
 
-    const cerrarModalProveedor = () => {
-        modalProveedor.style.display = 'none';
-        formNuevoProveedor.reset();
-    };
-
-    const cerrarModalCompra = () => {
-        modalCompra.style.display = 'none';
-        document.getElementById('formNuevaCompra').reset();
+    const cerrarModalProveedor = () => { modalProveedor.style.display = 'none'; formNuevoProveedor.reset(); };
+    const cerrarModalCompra = () => { 
+        modalCompra.style.display = 'none'; 
+        document.getElementById('formNuevaCompra').reset(); 
         document.getElementById('divSaldoPendiente').style.display = 'none';
         document.getElementById('compraSaldo').required = false;
     };
+    const cerrarModalAbono = () => { modalAbono.style.display = 'none'; document.getElementById('formNuevoAbono').reset(); };
 
     btnCerrarModalProveedor.addEventListener('click', cerrarModalProveedor);
     btnCancelarProveedor.addEventListener('click', cerrarModalProveedor);
     btnCerrarModalCompra.addEventListener('click', cerrarModalCompra);
     btnCancelarCompra.addEventListener('click', cerrarModalCompra);
+    btnCancelarAbono.addEventListener('click', cerrarModalAbono);
+    btnCerrarModalAbono.addEventListener('click', cerrarModalAbono);
 
     window.addEventListener('click', (e) => {
         if (e.target === modalProveedor) cerrarModalProveedor();
         if (e.target === modalCompra) cerrarModalCompra();
+        if (e.target === modalAbono) cerrarModalAbono();
     });
 
     formNuevoProveedor.addEventListener('submit', async (e) => {
@@ -445,5 +449,119 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSubmit.textContent = 'Registrar Compra';
         }
     });
+
+
+    // DEUDAS Y ABONOS
+    const bodyDeudas = document.getElementById('bodyDeudas');
+    const selectAbonoFactura = document.getElementById('abonoFactura');
+
+    const cargarDeudas = async () => {
+        try {
+            const respuesta = await fetch('http://localhost:3000/api/deudas');
+            const deudas = await respuesta.json();
+
+            bodyDeudas.innerHTML = '';
+
+            if (deudas.length === 0) {
+                bodyDeudas.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px; color: #10b981; font-weight: 500;">¡Felicidades! No tienes cuentas por pagar pendientes.</td>
+                    </tr>`;
+                return;
+            }
+
+            deudas.forEach(deuda => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #f1f5f9';
+
+                const fechaFormat = new Date(deuda.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' });
+                const totalFormat = `$${parseFloat(deuda.total_compra).toFixed(2)}`;
+                const saldoFormat = `$${parseFloat(deuda.saldo_pendiente).toFixed(2)}`;
+
+                tr.innerHTML = `
+                    <td style="padding: 15px; color: #475569;">${fechaFormat}</td>
+                    <td style="padding: 15px; font-weight: 500; color: #1e293b;">${deuda.proveedor}</td>
+                    <td style="padding: 15px; color: #64748b;">${totalFormat}</td>
+                    <td style="padding: 15px; color: #ef4444; font-weight: 600;">${saldoFormat}</td>
+                `;
+                bodyDeudas.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Error al cargar las deudas:', error);
+            bodyDeudas.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444;">Error al cargar las cuentas.</td></tr>`;
+        }
+    };
+
+    const cargarFacturasAbonoSelect = async () => {
+        try {
+            const respuesta = await fetch('http://localhost:3000/api/deudas');
+            const deudas = await respuesta.json();
+
+            selectAbonoFactura.innerHTML = '<option value="">Seleccione una factura...</option>';
+
+            deudas.forEach(deuda => {
+                const fechaFormat = new Date(deuda.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' });
+                const option = document.createElement('option');
+                option.value = deuda.id;
+                option.textContent = `${deuda.proveedor} (${fechaFormat}) - Deuda: $${parseFloat(deuda.saldo_pendiente).toFixed(2)}`;
+                selectAbonoFactura.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error al cargar facturas en select', error);
+        }
+    };
+
+    const formNuevoAbono = document.getElementById('formNuevoAbono');
+
+    formNuevoAbono.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const btnSubmit = formNuevoAbono.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Procesando...';
+
+        const idFactura = selectAbonoFactura.value;
+        const monto = document.getElementById('abonoMonto').value;
+
+        try {
+            const respuesta = await fetch(`http://localhost:3000/api/deudas/${idFactura}/abono`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ monto_abono: monto })
+            });
+
+            const data = await respuesta.json();
+
+            if (respuesta.ok) {
+                cerrarModalAbono();
+                cargarDeudas(); 
+                cargarCompras(); 
+
+                Toastify({
+                    text: "¡Abono registrado exitosamente!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    style: { background: "#10b981", borderRadius: "8px" }
+                }).showToast();
+            } else {
+                throw new Error(data.error || 'Error al procesar el pago');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Toastify({
+                text: error.message || "Ocurrió un error al registrar el abono.",
+                duration: 3000,
+                gravity: "top",
+                position: "center",
+                style: { background: "#ef4444", borderRadius: "8px" }
+            }).showToast();
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Guardar Abono';
+        }
+    });
+
+    cargarDeudas();
 
 });

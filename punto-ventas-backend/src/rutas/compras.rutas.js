@@ -9,7 +9,7 @@ router.post('/agenda/generar', comprasControlador.generarAgendaHoy);
 router.get('/compras', comprasControlador.obtenerCompras);
 router.post('/compras', comprasControlador.registrarCompra);
 
-router.get('deudas', comprasControlador.obtenerDeudas);
+router.get('/deudas', comprasControlador.obtenerDeudas);
 router.post('/deudas/:id/abono', comprasControlador.registrarAbono);
 
 

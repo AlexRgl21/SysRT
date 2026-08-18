@@ -91,47 +91,25 @@
 
             <div id="tab-compras" class="tab-contenido">
                 <section class="panel-tabla">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px;">
-                        <h2 style="margin: 0; border: none; padding: 0;">Registro de Facturas y Notas</h2>
-                    </div>
-
-                    <div style="max-width: 600px; margin: 0 auto; background: #f8fafc; padding: 25px; border-radius: 10px; border: 1px solid #e2e8f0;">
-                        <form id="formNuevaCompra">
-                            <div class="form-grupo">
-                                <label for="compraProveedor">Proveedor *</label>
-                                <select id="compraProveedor" required style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background-color: #fff;">
-                                    <option value="">Cargando proveedores...</option>
-                                </select>
-                            </div>
-
-                            <div style="display: flex; gap: 15px; margin-top: 15px;">
-                                <div class="form-grupo" style="flex: 1;">
-                                    <label for="compraTotal">Total de la Compra ($) *</label>
-                                    <input type="number" id="compraTotal" step="0.01" min="0" required placeholder="0.00">
-                                </div>
-
-                                <div class="form-grupo" style="flex: 1;">
-                                    <label for="compraEstatus">Estatus de Pago *</label>
-                                    <select id="compraEstatus" required style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background-color: #fff;">
-                                        <option value="pagada">Pagada (Contado)</option>
-                                        <option value="pendiente">Pendiente (Crédito)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-grupo" id="divSaldoPendiente" style="display: none; margin-top: 15px;">
-                                <label for="compraSaldo">Saldo Pendiente ($) *</label>
-                                <input type="number" id="compraSaldo" step="0.01" min="0" placeholder="0.00">
-                                <small style="color: #64748b; font-size: 12px; display: block; margin-top: 4px;">Monto que queda a deber al proveedor.</small>
-                            </div>
-
-                            <div class="form-grupo" style="margin-top: 15px;">
-                                <label for="compraNotas">Notas o Referencia (Opcional)</label>
-                                <textarea id="compraNotas" placeholder="Ej. Factura #12345, entregó el chofer de reemplazo..." style="width: 100%; min-height: 80px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; resize: vertical; font-family: inherit; font-size: 14px; outline: none;"></textarea>
-                            </div>
-
-                            <button type="submit" class="btn-primario" style="margin-top: 20px;">Registrar Compra</button>
-                        </form>
+                    <h2>Historial de Facturas y Notas</h2>
+                    
+                    <div style="overflow-x: auto; margin-top: 20px;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e2e8f0; color: #475569;">
+                                    <th style="padding: 12px 15px;">Fecha</th>
+                                    <th style="padding: 12px 15px;">Proveedor</th>
+                                    <th style="padding: 12px 15px;">Total</th>
+                                    <th style="padding: 12px 15px;">Estatus</th>
+                                    <th style="padding: 12px 15px;">Saldo Pendiente</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bodyCompras">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 20px; color: #94a3b8;">Cargando historial de compras...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
             </div>
@@ -180,6 +158,58 @@
                     <div class="modal-footer">
                         <button type="button" id="btnCancelarProveedor" class="btn-secundario">Cancelar</button>
                         <button type="submit" class="btn-primario" style="margin-top: 0; width: auto;">Guardar Proveedor</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modalCompra" class="modal-overlay" style="display: none;">
+        <div class="modal-contenido" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>Registrar Nueva Factura</h3>
+                <button id="btnCerrarModalCompra" class="btn-cerrar" title="Cerrar">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form id="formNuevaCompra">
+                    <div class="form-grupo">
+                        <label for="compraProveedor">Proveedor *</label>
+                        <select id="compraProveedor" required style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background-color: #fff;">
+                            <option value="">Cargando proveedores...</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; margin-top: 15px;">
+                        <div class="form-grupo" style="flex: 1;">
+                            <label for="compraTotal">Total de la Compra ($) *</label>
+                            <input type="number" id="compraTotal" step="0.01" min="0" required placeholder="0.00">
+                        </div>
+
+                        <div class="form-grupo" style="flex: 1;">
+                            <label for="compraEstatus">Estatus de Pago *</label>
+                            <select id="compraEstatus" required style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background-color: #fff;">
+                                <option value="pagada">Pagada (Contado)</option>
+                                <option value="pendiente">Pendiente (Crédito)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grupo" id="divSaldoPendiente" style="display: none; margin-top: 15px;">
+                        <label for="compraSaldo">Saldo Pendiente ($) *</label>
+                        <input type="number" id="compraSaldo" step="0.01" min="0" placeholder="0.00">
+                        <small style="color: #64748b; font-size: 12px; display: block; margin-top: 4px;">Monto que queda a deber al proveedor.</small>
+                    </div>
+
+                    <div class="form-grupo" style="margin-top: 15px;">
+                        <label for="compraNotas">Notas o Referencia (Opcional)</label>
+                        <textarea id="compraNotas" placeholder="Ej. Factura #12345, entregó el chofer de reemplazo..." style="width: 100%; min-height: 80px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; resize: vertical; font-family: inherit; font-size: 14px; outline: none;"></textarea>
+                    </div>
+
+                    <div class="modal-footer" style="margin-top: 25px;">
+                        <button type="button" id="btnCancelarCompra" class="btn-secundario">Cancelar</button>
+                        <button type="submit" class="btn-primario" style="margin-top: 0; width: auto;">Registrar Compra</button>
                     </div>
                 </form>
             </div>

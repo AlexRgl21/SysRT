@@ -195,6 +195,54 @@ const registrarAbono = async (req, res) => {
     }
 };
 
+
+// RESUMEN DE REPORTEs
+const obtenerResumenReportes = async (req, res) => {
+    try {
+        // DEUDAS TOTALES
+        const queryDeuda = `
+            SELECT 
+                COALESCE(SUM(saldo_pendiente), 0) AS deuda_total,
+                COUNT(id) AS facturas_pendientes
+            FROM compras
+            WHERE estatus_pago = 'pendiente' AND saldo_pendiente > 0
+        `;
+        const { rows: resDeuda } = await pool.query(queryDeuda);
+
+        // COMPRAS DEL MES 
+        const queryGasto = `
+            SELECT COALESCE(SUM(total_compra), 0) AS gasto_mes
+            FROM compras
+            WHERE EXTRACT(MONTH FROM fecha) = EXTRACT(MONTH FROM CURRENT_DATE)
+            AND EXTRACT(YEAR FROM fecha) = EXTRACT(YEAR FROM CURRENT_DATE)
+        `;
+        const { rows: resGasto } = await pool.query(queryGasto);
+
+        // TOP PROVEEDOR (MAS COMPRADO)
+        const queryTop = `
+            SELECT p.nombre, SUM(c.total_compra) as total_comprado
+            FROM compras c
+            JOIN proveedores p ON c.proveedor_id = p.id
+            WHERE EXTRACT(MONTH FROM c.fecha) = EXTRACT(MONTH FROM CURRENT_DATE)
+              AND EXTRACT(YEAR FROM c.fecha) = EXTRACT(YEAR FROM CURRENT_DATE)
+            GROUP BY p.id, p.nombre
+            ORDER BY total_comprado DESC
+            LIMIT 1
+        `;
+        const { rows: resTop } = await pool.query(queryTop);
+
+        res.json({
+            deuda_total: resDeuda[0].deuda_total,
+            facturas_pendientes: resDeuda[0].facturas_pendientes,
+            gasto_mes: resGasto[0].gasto_mes,
+            proveedor_top: resTop.length > 0 ? resTop[0].nombre : 'Ninguno aún'
+        });
+    } catch (error) {
+        console.error('Error al obtener reporte', error);
+        res.status(500).json({ error: 'Error interno al cargar reportes' });
+    } 
+};
+
 module.exports = {
     obtenerAgendaDia, 
     actualizarVisita,
@@ -204,5 +252,6 @@ module.exports = {
     registrarCompra,
     obtenerCompras, 
     obtenerDeudas,
-    registrarAbono
+    registrarAbono,
+    obtenerResumenReportes
 };

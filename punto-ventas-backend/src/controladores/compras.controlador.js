@@ -45,19 +45,26 @@ const actualizarVisita = async (req, res) => {
 // AGENDA DE HOY 
 const generarAgendaHoy = async (req, res) => {
     try {
+
+        const diaSemana = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'];
+        const diaHoy = diaSemana[new Date().getDay()];
+
+        const parametroBusqueda = `%${diaHoy}%`;
         const query = `
             INSERT INTO registro_visita (proveedor_id, fecha_visita)
             SELECT id, CURRENT_DATE
             FROM proveedores
-            WHERE activo = TRUE
+            WHERE activo = TRUE 
+            AND dias_visita ILIKE $1
             ON CONFLICT (proveedor_id, fecha_visita) DO NOTHING
             RETURNING id;
         `;
-        const { rows } = await pool.query(query);
+        const { rows } = await pool.query(query, [parametroBusqueda]);
         
         res.json({ 
-            mensaje: 'Agenda generada exitosamente', 
-            nuevosRegistros: rows.length 
+            mensaje: `Agenda del ${diaHoy} generada exitosamente`, 
+            nuevosRegistros: rows.length,
+            dia_detectado: diaHoy 
         });
     } catch (error) {
         console.error('Error al generar la agenda de hoy:', error);

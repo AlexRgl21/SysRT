@@ -265,6 +265,7 @@ const actualizarProveedor = async (req, res) => {
         const { rows } = await pool.query(query, [nombre, telefono, dias_visita, id ]);
 
         if (rows.length === 0) return res.status(404).json({ error: 'Proveedor no encontrado' });
+        res.json({ mensaje: 'Proveedor actualizado con éxito', proveedor: rows[0] });
     } catch (error) {
         console.error('Error al actualizar proveedor:', error);
         res.status(500).json({ error: 'Error interno al actualizar' });

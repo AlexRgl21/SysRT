@@ -12,6 +12,8 @@ router.post('/compras', comprasControlador.registrarCompra);
 router.get('/deudas', comprasControlador.obtenerDeudas);
 router.post('/deudas/:id/abono', comprasControlador.registrarAbono);
 
+router.get('/reportes/resumen', comprasControlador.obtenerResumenReportes);
+
 
 router.get('/proveedores', comprasControlador.obtenerProveedores);
 router.post('/proveedores', comprasControlador.crearProveedor);

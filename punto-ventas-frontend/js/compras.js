@@ -50,6 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const formNuevoProveedor = document.getElementById('formNuevoProveedor');
     const btnCerrarModalProveedor = document.getElementById('btnCerrarModalProveedor');
     const btnCancelarProveedor = document.getElementById('btnCancelarProveedor');
+    const modalCompra = document.getElementById('modalCompra');
+    const btnCerrarModalCompra = document.getElementById('btnCerrarModalCompra');
+    const btnCancelarCompra = document.getElementById('btnCancelarCompra');
+
 
     btnAccionPrincipal.addEventListener('click', () => {
         const tabActiva = document.querySelector('.tab-btn.activo').getAttribute('data-target');
@@ -57,6 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tabActiva === 'tab-directorio') {
             modalProveedor.style.display = 'flex';
             document.getElementById('provNombre').focus();
+        } else if (tabActiva === 'tab-compras') {
+            modalCompra.style.display = 'flex';
+            document.getElementById('compraProveedor').focus();
         }
     });
 
@@ -65,13 +72,21 @@ document.addEventListener('DOMContentLoaded', () => {
         formNuevoProveedor.reset();
     };
 
+    const cerrarModalCompra = () => {
+        modalCompra.style.display = 'none';
+        document.getElementById('formNuevaCompra').reset();
+        document.getElementById('divSaldoPendiente').style.display = 'none';
+        document.getElementById('compraSaldo').required = false;
+    };
+
     btnCerrarModalProveedor.addEventListener('click', cerrarModalProveedor);
     btnCancelarProveedor.addEventListener('click', cerrarModalProveedor);
+    btnCerrarModalCompra.addEventListener('click', cerrarModalCompra);
+    btnCancelarCompra.addEventListener('click', cerrarModalCompra);
 
     window.addEventListener('click', (e) => {
-        if (e.target === modalProveedor) {
-            cerrarModalProveedor();
-        }
+        if (e.target === modalProveedor) cerrarModalProveedor();
+        if (e.target === modalCompra) cerrarModalCompra();
     });
 
     formNuevoProveedor.addEventListener('submit', async (e) => {
@@ -282,22 +297,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     //REGISTRO DE COMPRAS
-    const selectProveedor = document.getElementById('compraProveedor');
-    const selectEstatus = document.getElementById('compraEstatus');
-    const divSaldoPendiente = document.getElementById('divSaldoPendiente');
-    const inputSaldo = document.getElementById('compraSaldo');
+    const bodyCompras = document.getElementById('bodyCompras');
 
+    const cargarCompras = async () => {
+        try {
+            const respuesta = await fetch('http://localhost:3000/api/compras');
+            const compras = await respuesta.json();
 
-    selectEstatus.addEventListener('change', (e) => {
-        if(e.target.value === 'pendiente') {
-            divSaldoPendiente.style.display = 'block';
-            inputSaldo.setAttribute('required', 'true');
-        } else {
-            divSaldoPendiente.style.display = 'none';
-            inputSaldo.removeAttribute('required');
-            inputSaldo.value = '';
+            bodyCompras.innerHTML = '';
+
+            if (compras.length === 0) {
+                bodyCompras.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px; color: #94a3b8;">No hay facturas registradas aún.</td>
+                    </tr>`;
+                return;
+            }
+
+            compras.forEach(compra => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #f1f5f9';
+
+                const fechaFormat = new Date(compra.fecha).toLocaleDateString('es-MX');
+                
+                const totalFormat = `$${parseFloat(compra.total_compra).toFixed(2)}`;
+                const saldoFormat = `$${parseFloat(compra.saldo_pendiente).toFixed(2)}`;
+
+                const estatusBadge = compra.estatus_pago === 'pagada' 
+                    ? `<span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Pagada</span>`
+                    : `<span style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Pendiente</span>`;
+
+                tr.innerHTML = `
+                    <td style="padding: 15px; color: #475569;">${fechaFormat}</td>
+                    <td style="padding: 15px; font-weight: 500; color: #1e293b;">${compra.proveedor}</td>
+                    <td style="padding: 15px; font-weight: 600; color: #0f172a;">${totalFormat}</td>
+                    <td style="padding: 15px;">${estatusBadge}</td>
+                    <td style="padding: 15px; color: ${compra.saldo_pendiente > 0 ? '#ef4444' : '#475569'}; font-weight: 500;">
+                        ${compra.saldo_pendiente > 0 ? saldoFormat : '-'}
+                    </td>
+                `;
+
+                bodyCompras.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Error al cargar historial de compras:', error);
+            bodyCompras.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: #ef4444;">Error al cargar el historial.</td>
+                </tr>`;
         }
-    });
+    };
+
+    cargarCompras();
+
+
 
     const cargarProveedoresSelect = async () => {
         try {
@@ -319,5 +372,78 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     cargarProveedoresSelect();
+
+    const selectProveedor = document.getElementById('compraProveedor');
+    const selectEstatus = document.getElementById('compraEstatus');
+    const divSaldoPendiente = document.getElementById('divSaldoPendiente');
+    const inputSaldo = document.getElementById('compraSaldo');
+
+    selectEstatus.addEventListener('change', (e) => {
+        if (e.target.value === 'pendiente') {
+            divSaldoPendiente.style.display = 'block';
+            inputSaldo.required = true; 
+        } else {
+            divSaldoPendiente.style.display = 'none';
+            inputSaldo.required = false; 
+            inputSaldo.value = '';
+        }
+    });
+    
+    const formNuevaCompra = document.getElementById('formNuevaCompra');
+
+    formNuevaCompra.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const btnSubmit = formNuevaCompra.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Guardando...';
+
+        const nuevaCompra = {
+            proveedor_id: selectProveedor.value,
+            total_compra: document.getElementById('compraTotal').value, 
+            estatus_pago: selectEstatus.value, 
+            saldo_pendiente: inputSaldo.value || 0,
+            notas: document.getElementById('compraNotas').value.trim()
+        };
+
+        try {
+            const respuesta = await fetch('http://localhost:3000/api/compras', {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevaCompra)
+            });
+
+            const data = await respuesta.json();
+
+            if (respuesta.ok) {
+                cerrarModalCompra();
+                cargarCompras();
+                divSaldoPendiente.style.display = 'none';
+                inputSaldo.required = false;
+
+                Toastify({
+                    text: "¡Factura registrada exitosamente!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    style: { background: "#10b981", borderRadius: "8px" }
+                }).showToast();
+            } else {
+                throw new Error(data.error || 'Error al guardar');
+            }
+        } catch (error) {
+            console.error('Error', error);
+            Toastify({
+                text: "Ocurrió un error al guardar la factura.",
+                duration: 3000,
+                gravity: "top",
+                position: "center",
+                style: { background: "#ef4444", borderRadius: "8px" }
+            }).showToast();
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Registrar Compra';
+        }
+    });
 
 });

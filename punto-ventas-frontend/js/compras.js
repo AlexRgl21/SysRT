@@ -443,47 +443,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //REGISTRO DE COMPRAS
     const bodyCompras = document.getElementById('bodyCompras');
+    
+    const inputBuscadorCompras = document.getElementById('buscadorCompras');
+    const selectFiltroEstatus = document.getElementById('filtroEstatusCompras');
+    const inputFiltroFecha = document.getElementById('filtroFechaCompras');
+    const btnLimpiarFiltrosCompras = document.getElementById('btnLimpiarFiltrosCompras');
+
+    // Variables globales 
+    let comprasGlobales = [];
+    let comprasFiltradas = [];
 
     const cargarCompras = async () => {
         try {
             const respuesta = await fetch('http://localhost:3000/api/compras');
-            const compras = await respuesta.json();
-
-            bodyCompras.innerHTML = '';
-
-            if (compras.length === 0) {
-                bodyCompras.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 20px; color: #94a3b8;">No hay facturas registradas aún.</td>
-                    </tr>`;
-                return;
-            }
-
-            compras.forEach(compra => {
-                const tr = document.createElement('tr');
-                tr.style.borderBottom = '1px solid #f1f5f9';
-
-                const fechaFormat = new Date(compra.fecha).toLocaleDateString('es-MX');
-                
-                const totalFormat = `$${parseFloat(compra.total_compra).toFixed(2)}`;
-                const saldoFormat = `$${parseFloat(compra.saldo_pendiente).toFixed(2)}`;
-
-                const estatusBadge = compra.estatus_pago === 'pagada' 
-                    ? `<span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Pagada</span>`
-                    : `<span style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Pendiente</span>`;
-
-                tr.innerHTML = `
-                    <td style="padding: 15px; color: #475569;">${fechaFormat}</td>
-                    <td style="padding: 15px; font-weight: 500; color: #1e293b;">${compra.proveedor}</td>
-                    <td style="padding: 15px; font-weight: 600; color: #0f172a;">${totalFormat}</td>
-                    <td style="padding: 15px;">${estatusBadge}</td>
-                    <td style="padding: 15px; color: ${compra.saldo_pendiente > 0 ? '#ef4444' : '#475569'}; font-weight: 500;">
-                        ${compra.saldo_pendiente > 0 ? saldoFormat : '-'}
-                    </td>
-                `;
-
-                bodyCompras.appendChild(tr);
-            });
+            comprasGlobales = await respuesta.json();
+            comprasFiltradas = [...comprasGlobales]; 
+            
+            renderizarTablaCompras();
         } catch (error) {
             console.error('Error al cargar historial de compras:', error);
             bodyCompras.innerHTML = `
@@ -492,6 +468,78 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>`;
         }
     };
+
+    const renderizarTablaCompras = () => {
+        bodyCompras.innerHTML = '';
+
+        if (comprasFiltradas.length === 0) {
+            bodyCompras.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: #94a3b8;">No se encontraron facturas con esos criterios.</td>
+                </tr>`;
+            return;
+        }
+
+        comprasFiltradas.forEach(compra => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+
+            const fechaFormat = new Date(compra.fecha).toLocaleDateString('es-MX');
+            const totalFormat = `$${parseFloat(compra.total_compra).toFixed(2)}`;
+            const saldoFormat = `$${parseFloat(compra.saldo_pendiente).toFixed(2)}`;
+
+            const estatusBadge = compra.estatus_pago === 'pagada' 
+                ? `<span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Pagada</span>`
+                : `<span style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Pendiente</span>`;
+
+            tr.innerHTML = `
+                <td style="padding: 15px; color: #475569;">${fechaFormat}</td>
+                <td style="padding: 15px; font-weight: 500; color: #1e293b;">${compra.proveedor}</td>
+                <td style="padding: 15px; font-weight: 600; color: #0f172a;">${totalFormat}</td>
+                <td style="padding: 15px;">${estatusBadge}</td>
+                <td style="padding: 15px; color: ${compra.saldo_pendiente > 0 ? '#ef4444' : '#475569'}; font-weight: 500;">
+                    ${compra.saldo_pendiente > 0 ? saldoFormat : '-'}
+                </td>
+            `;
+
+            bodyCompras.appendChild(tr);
+        });
+    };
+
+    const aplicarFiltrosCompras = () => {
+        const terminoProveedor = inputBuscadorCompras.value.toLowerCase().trim();
+        const estatusSeleccionado = selectFiltroEstatus.value;
+        const fechaSeleccionada = inputFiltroFecha.value; 
+
+        comprasFiltradas = comprasGlobales.filter(compra => {
+            const coincideProveedor = compra.proveedor.toLowerCase().includes(terminoProveedor);
+            
+            const coincideEstatus = estatusSeleccionado === 'todos' || compra.estatus_pago === estatusSeleccionado;
+            
+            let coincideFecha = true;
+            if (fechaSeleccionada) {
+                const fechaCompraStr = new Date(compra.fecha).toISOString().split('T')[0];
+                coincideFecha = (fechaCompraStr === fechaSeleccionada);
+            }
+
+            return coincideProveedor && coincideEstatus && coincideFecha;
+        });
+
+        renderizarTablaCompras();
+    };
+
+    inputBuscadorCompras.addEventListener('input', aplicarFiltrosCompras);
+    selectFiltroEstatus.addEventListener('change', aplicarFiltrosCompras);
+    inputFiltroFecha.addEventListener('change', aplicarFiltrosCompras);
+
+    btnLimpiarFiltrosCompras.addEventListener('click', () => {
+        inputBuscadorCompras.value = '';
+        selectFiltroEstatus.value = 'todos';
+        inputFiltroFecha.value = '';
+        
+        comprasFiltradas = [...comprasGlobales];
+        renderizarTablaCompras();
+    });
 
     cargarCompras();
 

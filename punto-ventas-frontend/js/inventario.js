@@ -1,17 +1,15 @@
 const API_URL = 'http://localhost:3000/api/productos';
 
 const tbody = document.getElementById('tablaProductos');
+
 let listaProductosGlobal = [];
-
+let listaFiltradaGlobal = []; 
 let paginaActual = 1;
-const filasPorPagina = 15;
+const filasPorPagina = 10;
 
-/// Función encargada de dibujar las filas en el HTML
 const actualizarEstadisticas = (productos) => {
     const total = productos.length;
-    // Si tiene más de 0, está en stock (sano o bajo)
     const enStock = productos.filter(p => Number(p.stock_actual) > 0).length;
-    // Consideramos stock bajo si tiene 10 o menos unidades
     const stockBajo = productos.filter(p => Number(p.stock_actual)  > 0 && Number(p.stock_actual) <= 10).length;
     const agotados = productos.filter (p => Number(p.stock_actual) === 0).length;
 
@@ -21,71 +19,26 @@ const actualizarEstadisticas = (productos) => {
     document.getElementById('statAgotados').textContent = agotados;
 };
 
-const renderizarPaginacion = (totalItems) => {
-    const totalPaginas = Math.ceil(totalItems / filasPorPagina) || 1;
-    const controles = document.getElementById('controlesPaginacion');
-    const texto = document.getElementById('textoPaginacion');
-
-    const inicioText = totalItems === 0 ? 0 : ((paginaActual - 1) * filasPorPagina) + 1;
-    const finText = Math.min(paginaActual * filasPorPagina, totalItems);
-    
-    texto.textContent = `Mostrando ${inicioText}-${finText} de ${totalItems}`;
-    controles.innerHTML = '';
-
-    // Botón Anterior
-    const btnAnterior = document.createElement('button');
-    btnAnterior.innerHTML = '&larr;';
-    btnAnterior.className = 'btn-pagina';
-    btnAnterior.disabled = paginaActual === 1;
-    btnAnterior.onclick = () => { if(paginaActual > 1) { paginaActual--; renderizarTabla(listaFiltradaGlobal); } }; 
-    controles.appendChild(btnAnterior);
-
-    // Números
-    for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = `btn-pagina ${i === paginaActual ? 'activa' : ''}`;
-        btn.onclick = () => { paginaActual = i; renderizarTabla(listaFiltradaGlobal); };
-        controles.appendChild(btn);
-    }
-
-    // Botón Siguiente
-    const btnSiguiente = document.createElement('button');
-    btnSiguiente.innerHTML = '&rarr;';
-    btnSiguiente.className = 'btn-pagina';
-    btnSiguiente.disabled = paginaActual === totalPaginas;
-    btnSiguiente.onclick = () => { if(paginaActual < totalPaginas) { paginaActual++; renderizarTabla(listaFiltradaGlobal); } };
-    controles.appendChild(btnSiguiente);
-};
-
-const renderizarTabla = (productos = listaFiltradaGlobal.length > 0 ? listaFiltradaGlobal : listaProductosGlobal) => {
+const renderizarTabla = () => {
     tbody.innerHTML = '';
-
-    // Las estadísticas siempre se basan en el catálogo global
     actualizarEstadisticas(listaProductosGlobal);
 
-    if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No se encontraron productos.</td></tr>';
-        renderizarPaginacion(0);
+    if (listaFiltradaGlobal.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #94a3b8;">No se encontraron productos.</td></tr>';
+        renderizarPaginacion();
         return;
     }
 
-    // Calcular el segmento de productos que toca mostrar en la página actual
     const inicio = (paginaActual - 1) * filasPorPagina;
     const fin = inicio + filasPorPagina;
-    const productosPaginados = productos.slice(inicio, fin);
+    const productosPaginados = listaFiltradaGlobal.slice(inicio, fin);
 
     productosPaginados.forEach(producto => {
-        const codigoMostrar = (producto.codigos && producto.codigos.length > 0)
-            ? producto.codigos[0]
-            : 'Sin Código';
-
+        const codigoMostrar = (producto.codigos && producto.codigos.length > 0) ? producto.codigos[0] : 'Sin Código';
         const stockNum = Number(producto.stock_actual);
-
         const claseStock = stockNum <= 10 ? 'stock-bajo' : 'stock-normal';
 
         const fila = document.createElement('tr');
-
         fila.innerHTML = `
             <td>${codigoMostrar}</td>
             <td><strong>${producto.nombre}</strong></td>
@@ -93,21 +46,18 @@ const renderizarTabla = (productos = listaFiltradaGlobal.length > 0 ? listaFiltr
             <td>$${Number(producto.precio_compra).toFixed(2)}</td>
             <td>$${Number(producto.precio_venta).toFixed(2)}</td>
             <td style="text-align: center;"> 
-                <span class="${claseStock}">
-                    ${stockNum}
-                </span>
+                <span class="${claseStock}">${stockNum}</span>
             </td>
             <td>
                 <div style="display: flex; justify-content: center; gap: 8px; align-items: center;">
-                    <!-- Tus SVG de editar y eliminar se mantienen idénticos -->
-                    <button onclick="editarProducto(${producto.id})" class="btn-editar" title="Editar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button onclick="editarProducto(${producto.id})" class="btn-editar" title="Editar" style="background: none; border: none; cursor: pointer; display: inline-flex;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8ba0b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onmouseover="this.style.stroke='#3b82f6'" onmouseout="this.style.stroke='#8ba0b2'" style="transition: 0.2s;">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>
                     </button>
-                    <button onclick="eliminarProducto(${producto.id})" class="btn-eliminar" title="Eliminar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button onclick="eliminarProducto(${producto.id})" class="btn-eliminar" title="Eliminar" style="background: none; border: none; cursor: pointer; display: inline-flex;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8ba0b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onmouseover="this.style.stroke='#ef4444'" onmouseout="this.style.stroke='#8ba0b2'" style="transition: 0.2s;">
                             <polyline points="3 6 5 6 21 6"></polyline>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                             <line x1="10" y1="11" x2="10" y2="17"></line>
@@ -120,26 +70,67 @@ const renderizarTabla = (productos = listaFiltradaGlobal.length > 0 ? listaFiltr
         tbody.appendChild(fila);
     });
 
-    renderizarPaginacion(productos.length);
+    renderizarPaginacion();
 };
 
-// Función principal para extraer los productos de la base de datos
+const renderizarPaginacion = () => {
+    const totalPaginas = Math.ceil(listaFiltradaGlobal.length / filasPorPagina);
+    const controles = document.getElementById('controlesPaginacion');
+    const texto = document.getElementById('textoPaginacion');
+
+    if (totalPaginas <= 1 && listaFiltradaGlobal.length > 0) {
+        texto.textContent = `Mostrando 1 a ${listaFiltradaGlobal.length} de ${listaFiltradaGlobal.length}`;
+        controles.innerHTML = '';
+        return;
+    } else if (listaFiltradaGlobal.length === 0) {
+        texto.textContent = `Mostrando 0 de 0`;
+        controles.innerHTML = '';
+        return;
+    }
+
+    const inicioText = ((paginaActual - 1) * filasPorPagina) + 1;
+    const finText = Math.min(paginaActual * filasPorPagina, listaFiltradaGlobal.length);
+    texto.textContent = `Mostrando ${inicioText} a ${finText} de ${listaFiltradaGlobal.length}`;
+    
+    controles.innerHTML = '';
+
+    // Botón Anterior
+    const btnAnterior = document.createElement('button');
+    btnAnterior.textContent = 'Anterior';
+    btnAnterior.className = 'btn-secundario';
+    btnAnterior.style.padding = '6px 12px';
+    btnAnterior.style.fontSize = '13px';
+    btnAnterior.style.marginRight = '8px';
+    btnAnterior.disabled = paginaActual === 1;
+    if (paginaActual === 1) btnAnterior.style.opacity = '0.5';
+    btnAnterior.onclick = () => { if(paginaActual > 1) { paginaActual--; renderizarTabla(); } };
+    controles.appendChild(btnAnterior);
+
+    // Botón Siguiente
+    const btnSiguiente = document.createElement('button');
+    btnSiguiente.textContent = 'Siguiente';
+    btnSiguiente.className = 'btn-secundario';
+    btnSiguiente.style.padding = '6px 12px';
+    btnSiguiente.style.fontSize = '13px';
+    btnSiguiente.disabled = paginaActual === totalPaginas;
+    if (paginaActual === totalPaginas) btnSiguiente.style.opacity = '0.5';
+    btnSiguiente.onclick = () => { if(paginaActual < totalPaginas) { paginaActual++; renderizarTabla(); } };
+    controles.appendChild(btnSiguiente);
+};
+
 const cargarInventario = async () => {
     try {
         const respuesta = await fetch(API_URL);
+        if (!respuesta.ok) throw new Error('Error al conectar con el servidor');
 
-        if (!respuesta.ok) {
-            throw new Error('Error al conectar con el servidor');
-        }
+        listaProductosGlobal = await respuesta.json();
+        listaFiltradaGlobal = [...listaProductosGlobal]; 
+        paginaActual = 1;
 
-        const productos = await respuesta.json();
-        listaProductosGlobal = productos; 
-
-        renderizarTabla(listaProductosGlobal);
-
+        renderizarTabla();
     } catch (error) {
         console.error('Error:', error);
-        tbody.innerHTML = '<tr><td colspan="7">Error al cargar el inventario. Verifica que el backend esté encendido.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Error al cargar el inventario. Verifica que el backend esté encendido.</td></tr>';
     }
 };
 

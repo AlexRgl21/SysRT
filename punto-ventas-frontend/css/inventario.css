@@ -353,3 +353,19 @@ tbody tr:hover {
     color: white;
     border-color: #38bdf8;
 }
+
+.btn-secundario {
+    padding: 10px 20px;
+    background-color: #f1f5f9;
+    color: #475569;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-secundario:hover {
+    background-color: #e2e8f0;
+}

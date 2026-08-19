@@ -107,9 +107,40 @@
 
             <div id="tab-compras" class="tab-contenido">
                 <section class="panel-tabla">
-                    <h2>Historial de Facturas y Notas</h2>
-                    
-                    <div style="overflow-x: auto; margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                        
+                        <h2 style="margin: 0; border: none;">Historial de Facturas y Notas</h2>
+                        
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <div style="position: relative; width: 250px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="buscadorCompras" placeholder="Buscar por proveedor..." style="padding: 10px 15px 10px 38px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; outline: none; font-size: 14px; background-color: #f8fafc; transition: all 0.2s;" onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)';" onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none';">
+                            </div>
+
+                            <div>
+                                <select id="filtroEstatusCompras" style="padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 14px; background-color: #f8fafc; cursor: pointer;">
+                                    <option value="todos">Todos los estatus</option>
+                                    <option value="pagada">Pagadas</option>
+                                    <option value="pendiente">Pendientes</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <input type="date" id="filtroFechaCompras" style="padding: 10px 15px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 14px; background-color: #f8fafc; cursor: pointer;" title="Filtrar por fecha específica">
+                            </div>
+                            
+                            <div>
+                                <button id="btnLimpiarFiltrosCompras" class="btn-secundario" style="margin: 0; padding: 10px 15px;" title="Limpiar filtros">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto; margin-top: 0;">
                         <table style="width: 100%; border-collapse: collapse; text-align: left;">
                             <thead>
                                 <tr style="border-bottom: 2px solid #e2e8f0; color: #475569;">

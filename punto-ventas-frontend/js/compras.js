@@ -443,15 +443,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //REGISTRO DE COMPRAS
     const bodyCompras = document.getElementById('bodyCompras');
+    const contenedorPaginacionCompras = document.getElementById('paginacionCompras'); // Referencia a la paginación
     
     const inputBuscadorCompras = document.getElementById('buscadorCompras');
     const selectFiltroEstatus = document.getElementById('filtroEstatusCompras');
     const inputFiltroFecha = document.getElementById('filtroFechaCompras');
     const btnLimpiarFiltrosCompras = document.getElementById('btnLimpiarFiltrosCompras');
 
-    // Variables globales 
+    // Variables globales para paginación y filtros
     let comprasGlobales = [];
     let comprasFiltradas = [];
+    let paginaActualCompras = 1;
+    const elementosPorPaginaCompras = 10; // Puedes cambiarlo a 5 o 15 si prefieres
 
     const cargarCompras = async () => {
         try {
@@ -459,6 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
             comprasGlobales = await respuesta.json();
             comprasFiltradas = [...comprasGlobales]; 
             
+            paginaActualCompras = 1; // Reiniciar página al cargar
             renderizarTablaCompras();
         } catch (error) {
             console.error('Error al cargar historial de compras:', error);
@@ -471,6 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderizarTablaCompras = () => {
         bodyCompras.innerHTML = '';
+        contenedorPaginacionCompras.innerHTML = ''; 
 
         if (comprasFiltradas.length === 0) {
             bodyCompras.innerHTML = `
@@ -480,11 +485,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        comprasFiltradas.forEach(compra => {
+        const inicio = (paginaActualCompras - 1) * elementosPorPaginaCompras;
+        const fin = inicio + elementosPorPaginaCompras;
+        const comprasPagina = comprasFiltradas.slice(inicio, fin);
+
+        comprasPagina.forEach(compra => {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #f1f5f9';
 
-            const fechaFormat = new Date(compra.fecha).toLocaleDateString('es-MX');
+            const fechaFormat = new Date(compra.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' });
             const totalFormat = `$${parseFloat(compra.total_compra).toFixed(2)}`;
             const saldoFormat = `$${parseFloat(compra.saldo_pendiente).toFixed(2)}`;
 
@@ -504,6 +513,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
             bodyCompras.appendChild(tr);
         });
+
+        renderizarControlesPaginacionCompras();
+    };
+
+    // Función para los botones 
+    const renderizarControlesPaginacionCompras = () => {
+        const totalPaginas = Math.ceil(comprasFiltradas.length / elementosPorPaginaCompras);
+        if (totalPaginas <= 1) return; // Si todo cabe en 1 página, no mostramos botones
+
+        const infoTexto = document.createElement('span');
+        infoTexto.style.color = '#64748b';
+        infoTexto.style.fontSize = '14px';
+        infoTexto.style.marginRight = 'auto'; 
+        const itemInicio = (paginaActualCompras - 1) * elementosPorPaginaCompras + 1;
+        const itemFin = Math.min(paginaActualCompras * elementosPorPaginaCompras, comprasFiltradas.length);
+        infoTexto.textContent = `Mostrando ${itemInicio} a ${itemFin} de ${comprasFiltradas.length}`;
+        contenedorPaginacionCompras.appendChild(infoTexto);
+
+        // Botón Anterior
+        const btnAnterior = document.createElement('button');
+        btnAnterior.textContent = 'Anterior';
+        btnAnterior.className = 'btn-secundario';
+        btnAnterior.style.padding = '6px 12px';
+        btnAnterior.style.fontSize = '13px';
+        btnAnterior.disabled = paginaActualCompras === 1;
+        if (paginaActualCompras === 1) btnAnterior.style.opacity = '0.5';
+        btnAnterior.onclick = () => {
+            if (paginaActualCompras > 1) {
+                paginaActualCompras--;
+                renderizarTablaCompras();
+            }
+        };
+        contenedorPaginacionCompras.appendChild(btnAnterior);
+
+        // Botón Siguiente
+        const btnSiguiente = document.createElement('button');
+        btnSiguiente.textContent = 'Siguiente';
+        btnSiguiente.className = 'btn-secundario';
+        btnSiguiente.style.padding = '6px 12px';
+        btnSiguiente.style.fontSize = '13px';
+        btnSiguiente.disabled = paginaActualCompras === totalPaginas;
+        if (paginaActualCompras === totalPaginas) btnSiguiente.style.opacity = '0.5';
+        btnSiguiente.onclick = () => {
+            if (paginaActualCompras < totalPaginas) {
+                paginaActualCompras++;
+                renderizarTablaCompras();
+            }
+        };
+        contenedorPaginacionCompras.appendChild(btnSiguiente);
     };
 
     const aplicarFiltrosCompras = () => {
@@ -513,7 +571,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         comprasFiltradas = comprasGlobales.filter(compra => {
             const coincideProveedor = compra.proveedor.toLowerCase().includes(terminoProveedor);
-            
             const coincideEstatus = estatusSeleccionado === 'todos' || compra.estatus_pago === estatusSeleccionado;
             
             let coincideFecha = true;
@@ -525,6 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return coincideProveedor && coincideEstatus && coincideFecha;
         });
 
+        paginaActualCompras = 1; 
         renderizarTablaCompras();
     };
 
@@ -538,6 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inputFiltroFecha.value = '';
         
         comprasFiltradas = [...comprasGlobales];
+        paginaActualCompras = 1; 
         renderizarTablaCompras();
     });
 

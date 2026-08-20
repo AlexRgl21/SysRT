@@ -324,6 +324,42 @@ if (btnConfirmarPago) {
                 return;
             }
 
+            // LOGICA PARA EL TICKET
+            const folio = String(resultado.venta_id).padStart(6, '0');
+            document.getElementById('ticketFolio').textContent = `#${folio}`;
+            
+            const fechaActual = new Date().toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+            document.getElementById('ticketFecha').textContent = fechaActual;
+
+            const nombreCajero = document.getElementById('nombreUsuarioDropdown').textContent;
+            document.getElementById('ticketCajero').textContent = nombreCajero !== 'Cargando...' ? nombreCajero : 'Cajero Principal';
+
+            const ticketCuerpoTabla = document.getElementById('ticketCuerpoTabla');
+            ticketCuerpoTabla.innerHTML = '';
+
+            carrito.forEach(producto => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="col-cant">${producto.cantidad}</td>
+                    <td class="col-desc">${producto.nombre}<br><small>$${producto.precio_venta.toFixed(2)}</small></td>
+                    <td class="col-total">$${(producto.cantidad * producto.precio_venta).toFixed(2)}</td>
+                `;
+                ticketCuerpoTabla.appendChild(tr);
+            });
+
+            document.getElementById('ticketTotal').textContent = `$${totalConComision.toFixed(2)}`;
+            
+            if (selectMetodoPagoModal.value === 'efectivo') {
+                const recibido = Number(inputEfectivoModal.value) || 0;
+                document.getElementById('ticketEfectivo').textContent = `$${recibido.toFixed(2)}`;
+                document.getElementById('ticketCambio').textContent = displayCambioModal.textContent;
+            } else {
+                document.getElementById('ticketEfectivo').textContent = 'Pago con Tarjeta';
+                document.getElementById('ticketCambio').textContent = '$0.00';
+            }
+
+            modalCobro.classList.remove('modal-activo');
+
             await Swal.fire({
                 title: '¡Cobro Exitoso!',
                 text: `Ticket #${resultado.venta_id} registrado correctamente.`,
@@ -331,6 +367,7 @@ if (btnConfirmarPago) {
                 confirmButtonColor: '#10b981',
                 confirmButtonText: 'Aceptar'
             })
+            window.print();
             
             // Éxito: Limpiamos todo y cerramos el modal
             carrito = [];

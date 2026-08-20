@@ -216,33 +216,59 @@ const obtenerResumenReportes = async (req, res) => {
         `;
         const { rows: resDeuda } = await pool.query(queryDeuda);
 
-        // COMPRAS DEL MES 
-        const queryGasto = `
-            SELECT COALESCE(SUM(total_compra), 0) AS gasto_mes
+        // GASTO DEL MES ACTUAL Y FACTURAS
+        const queryGastoActual = `
+            SELECT 
+                COALESCE(SUM(total_compra), 0) AS gasto_mes,
+                COUNT(id) AS total_facturas
             FROM compras
-            WHERE EXTRACT(MONTH FROM fecha) = EXTRACT(MONTH FROM CURRENT_DATE)
-            AND EXTRACT(YEAR FROM fecha) = EXTRACT(YEAR FROM CURRENT_DATE)
+            WHERE date_trunc('month', fecha) = date_trunc('month', CURRENT_DATE)
         `;
-        const { rows: resGasto } = await pool.query(queryGasto);
+        const { rows: resGastoActual } = await pool.query(queryGastoActual);
 
-        // TOP PROVEEDOR (MAS COMPRADO)
-        const queryTop = `
+        // GASTO DEL MES ANTERIOR
+        const queryGastoAnterior = `
+            SELECT COALESCE(SUM(total_compra), 0) AS gasto_mes_anterior
+            FROM compras
+            WHERE date_trunc('month', fecha) = date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
+        `;
+        const { rows: resGastoAnterior } = await pool.query(queryGastoAnterior);
+
+        // TOP PROVEEDORES (5 MAS COMPRADOS)
+        const queryTopProveedores = `
             SELECT p.nombre, SUM(c.total_compra) as total_comprado
             FROM compras c
             JOIN proveedores p ON c.proveedor_id = p.id
-            WHERE EXTRACT(MONTH FROM c.fecha) = EXTRACT(MONTH FROM CURRENT_DATE)
-              AND EXTRACT(YEAR FROM c.fecha) = EXTRACT(YEAR FROM CURRENT_DATE)
+            WHERE date_trunc('month', c.fecha) = date_trunc('month', CURRENT_DATE)
             GROUP BY p.id, p.nombre
             ORDER BY total_comprado DESC
-            LIMIT 1
+            LIMIT 5
         `;
-        const { rows: resTop } = await pool.query(queryTop);
+        const { rows: resTopProveedores } = await pool.query(queryTopProveedores);
+
+        // ULTIMAS 5 COMPRAS
+        const queryUltimasCompras = `
+            SELECT c.id, c.fecha, p.nombre AS proveedor, c.total_compra, c.estatus_pago
+            FROM compras c
+            JOIN proveedores p ON c.proveedor_id = p.id
+            ORDER BY c.fecha DESC, c.id DESC
+            LIMIT 5
+        `;
+        const { rows: resUltimasCompras } = await pool.query(queryUltimasCompras);
+
+        const gastoMes = parseFloat(resGastoActual[0].gasto_mes);
+        const totalFacturas = parseInt(resGastoActual[0].total_facturas);
+        const promedioFactura = totalFacturas > 0 ? (gastoMes / totalFacturas) : 0;
 
         res.json({
             deuda_total: resDeuda[0].deuda_total,
             facturas_pendientes: resDeuda[0].facturas_pendientes,
-            gasto_mes: resGasto[0].gasto_mes,
-            proveedor_top: resTop.length > 0 ? resTop[0].nombre : 'Ninguno aún'
+            gasto_mes: gastoMes,
+            promedio_factura: promedioFactura,
+            gasto_mes_anterior: parseFloat(resGastoAnterior[0].gasto_mes_anterior),
+            proveedor_top: resTopProveedores.length > 0 ? resTopProveedores[0].nombre : 'Ninguno aún',
+            grafica_proveedores: resTopProveedores, 
+            ultimas_compras: resUltimasCompras 
         });
     } catch (error) {
         console.error('Error al obtener reporte', error);

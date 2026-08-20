@@ -265,6 +265,14 @@ btnBuscarCodigo.addEventListener('click', async () => {
     }
 });
 
+inputCodigoBuscador.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();  
+        
+        btnBuscarCodigo.click(); 
+    }
+});
+
 
 // ALTA DE PRODUCTO 
 const btnGuardarNuevoProducto = document.getElementById('btnGuardarNuevoProducto');
@@ -563,3 +571,69 @@ const filtrarTabla = () => {
 
 inputBuscadorTabla.addEventListener('input', filtrarTabla);
 selectFiltroCategoria.addEventListener('change', filtrarTabla);
+
+
+
+// IMPRESION TICKET INVENTARIO 
+const btnImprimirInventario = document.getElementById('btnImprimirInventario');
+
+if (btnImprimirInventario) {
+    btnImprimirInventario.addEventListener('click', () => {
+        
+        if (!listaFiltradaGlobal || listaFiltradaGlobal.length === 0) {
+            Toastify({
+                text: "No hay productos en esta vista para imprimir.",
+                duration: 3000,
+                gravity: "top", position: "center",
+                style: { background: "#f59e0b" }
+            }).showToast();
+            return;
+        }
+
+        const selectCategoria = document.getElementById('selectFiltroCategoria');
+        const textoCategoria = selectCategoria.options[selectCategoria.selectedIndex].text;
+        document.getElementById('ticketRepCategoria').textContent = textoCategoria;
+
+        const fechaActual = new Date().toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+        document.getElementById('ticketRepFecha').textContent = fechaActual;
+
+        const nombreCajero = document.getElementById('nombreUsuarioDropdown').textContent;
+        document.getElementById('ticketRepUsuario').textContent = nombreCajero !== 'Cargando...' ? nombreCajero : 'Usuario Principal';
+
+        //Llenar la tabla del ticket
+        const cuerpoTabla = document.getElementById('ticketRepCuerpoTabla');
+        cuerpoTabla.innerHTML = '';
+        
+        let totalPiezas = 0;
+        let costoTotalInventario = 0;
+
+        listaFiltradaGlobal.forEach(prod => {
+            const stock = Number(prod.stock_actual) || 0;
+            const costo = Number(prod.precio_compra) || 0; 
+            
+            const codigoMostrar = (prod.codigos && prod.codigos.length > 0) ? prod.codigos[0] : 'S/N';
+            
+            totalPiezas += stock;
+            costoTotalInventario += (stock * costo);
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="col-desc" style="padding-right: 5px; font-size: 11px;">
+                    ${prod.nombre}<br><small style="color: #000;">${codigoMostrar}</small>
+                </td>
+                <td class="col-cant" style="font-weight: bold; text-align: center; font-size: 12px;">
+                    ${stock}
+                </td>
+            `;
+            cuerpoTabla.appendChild(tr);
+        });
+
+        // Asignar totales
+        document.getElementById('ticketRepTotalArts').textContent = totalPiezas;
+        document.getElementById('ticketRepValor').textContent = `$${costoTotalInventario.toFixed(2)}`;
+
+        setTimeout(() => {
+            window.print();
+        }, 300);
+    });
+}

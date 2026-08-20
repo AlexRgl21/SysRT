@@ -334,6 +334,10 @@ body {
     vertical-align: top;
 }
 
+.oculto-en-pantalla {
+    display: none !important;
+}
+
 .ticket-termico .col-cant { width: 15%; text-align: center; }
 .ticket-termico .col-desc { width: 55%; }
 .ticket-termico .col-total { width: 30%; text-align: right; }
@@ -346,20 +350,30 @@ body {
 }
 
 @media print {
+    html, body {
+        height: auto !important;
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+    }
 
-    body > *:not(#ticketVenta) {
+    body > *:not(#ticketVenta):not(#ticketReporteInventario) {
         display: none !important;
     }
 
-    #ticketVenta {
+    #ticketVenta, #ticketReporteInventario {
         display: block !important;
         position: static !important;
         margin: 0 !important;
-        padding: 0 !important;
-        width: 100% !important; /* Para que tome el ancho del papel */
+        padding: 0 15px !important; 
+        width: 100% !important; 
+        box-sizing: border-box !important; 
     }
 
     @page {
         margin: 0;
+    }
+    tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
     }
 }

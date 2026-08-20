@@ -268,6 +268,30 @@ const obtenerResumenReportes = async (req, res) => {
         const { rows: resSemana } = await pool.query(querySemana);
         const { rows: resUltimasCompras } = await pool.query(queryUltimasCompras);
 
+        // TOP PROVEEDORES DE LA SEMANA
+        const queryTopProveedoresSemana = `
+            SELECT p.nombre, SUM(c.total_compra) as total_comprado
+            FROM compras c
+            JOIN proveedores p ON c.proveedor_id = p.id
+            WHERE date_trunc('week', c.fecha) = date_trunc('week', CURRENT_DATE)
+            GROUP BY p.id, p.nombre
+            ORDER BY total_comprado DESC
+            LIMIT 5
+        `;
+        const { rows: resTopProveedoresSemana } = await pool.query(queryTopProveedoresSemana);
+
+        // GASTOS DE LA SEMANA ANTERIOR
+        const querySemanaAnterior = `
+            SELECT 
+                EXTRACT(ISODOW FROM fecha) AS dia_indice,
+                COALESCE(SUM(total_compra), 0) AS total_gastado
+            FROM compras
+            WHERE date_trunc('week', fecha) = date_trunc('week', CURRENT_DATE - INTERVAL '1 week')
+            GROUP BY dia_indice
+            ORDER BY dia_indice ASC
+        `;
+        const { rows: resSemanaAnterior } = await pool.query(querySemanaAnterior);
+
         const gastoMes = parseFloat(resGastoActual[0].gasto_mes);
         const totalFacturas = parseInt(resGastoActual[0].total_facturas);
         const promedioFactura = totalFacturas > 0 ? (gastoMes / totalFacturas) : 0;
@@ -279,9 +303,11 @@ const obtenerResumenReportes = async (req, res) => {
             promedio_factura: promedioFactura,
             gasto_mes_anterior: parseFloat(resGastoAnterior[0].gasto_mes_anterior),
             proveedor_top: resTopProveedores.length > 0 ? resTopProveedores[0].nombre : 'Ninguno aún',
-            grafica_proveedores: resTopProveedores, 
+            grafica_proveedores: resTopProveedores,
+            grafica_proveedores_semana: resTopProveedoresSemana, 
             ultimas_compras: resUltimasCompras, 
-            grafica_semana: resSemana
+            grafica_semana: resSemana,
+            grafica_semana_anterior: resSemanaAnterior
         });
     } catch (error) {
         console.error('Error al obtener reporte', error);

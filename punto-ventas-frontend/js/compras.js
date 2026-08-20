@@ -817,24 +817,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // MODULO DE REPORTES (DASHBOARD)
-    let chartTopProveedores = null; 
+    let chartTopProveedores = null;
+    let chartSemanaInstancia = null;
+    let datosReportesGlobal = null; 
 
     const cargarResumenReportes = async () => {
         try {
             const respuesta = await fetch('http://localhost:3000/api/reportes/resumen');
-            const datos = await respuesta.json();
+            datosReportesGlobal = await respuesta.json();
+            const datos = datosReportesGlobal;
 
             const formatoMoneda = (cantidad) => `$${parseFloat(cantidad || 0).toFixed(2)}`;
 
+            // Llenar Tarjetas
             document.getElementById('repDeudaTotal').textContent = formatoMoneda(datos.deuda_total);
             document.getElementById('repFacturasPendientes').textContent = `En ${datos.facturas_pendientes || 0} facturas sin pagar`;
             document.getElementById('repGastoMes').textContent = formatoMoneda(datos.gasto_mes);
             document.getElementById('repProveedorTop').textContent = datos.proveedor_top;
             document.getElementById('repPromedioFactura').textContent = formatoMoneda(datos.promedio_factura);
 
+            // Últimas Compras
             const contenedorUltimas = document.getElementById('contenedorUltimasCompras');
             contenedorUltimas.innerHTML = ''; 
-
             if (!datos.ultimas_compras || datos.ultimas_compras.length === 0) {
                 contenedorUltimas.innerHTML = '<p style="color: #94a3b8; text-align: center; font-size: 14px; margin-top: 20px;">No hay compras recientes.</p>';
             } else {
@@ -865,119 +869,121 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            const ctx = document.getElementById('graficaProveedores').getContext('2d');
-            
-            if (chartTopProveedores) {
-                chartTopProveedores.destroy();
-            }
-
-            const etiquetas = datos.grafica_proveedores.map(p => p.nombre);
-            const montos = datos.grafica_proveedores.map(p => parseFloat(p.total_comprado));
-
-            chartTopProveedores = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: etiquetas,
-                    datasets: [{
-                        label: 'Gasto del mes ($)',
-                        data: montos,
-                        backgroundColor: [
-                            '#3b82f6', // Azul
-                            '#10b981', // Verde
-                            '#f59e0b', // Naranja
-                            '#ef4444', // Rojo
-                            '#8b5cf6'  // Morado
-                        ],
-                        borderRadius: 6,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ' $' + context.raw.toLocaleString('es-MX', { minimumFractionDigits: 2 });
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) { return '$' + value; }
-                            },
-                            grid: { color: '#f1f5f9' }
-                        },
-                        x: {
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-
-            const ctxSemana = document.getElementById('graficaSemana').getContext('2d');
-            
-            // Si creamos una variable global "chartSemana = null" al inicio, la destruimos aquí
-            if (window.chartSemanaInstancia) { window.chartSemanaInstancia.destroy(); }
-
-            // Preparamos un arreglo de 7 días en ceros [Lunes, Martes, ..., Domingo]
-            const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-            const datosSemana = [0, 0, 0, 0, 0, 0, 0];
-
-            // Rellenamos los días que sí tuvieron gastos
-            if (datos.grafica_semana) {
-                datos.grafica_semana.forEach(dia => {
-                    const indiceArreglo = parseInt(dia.dia_indice) - 1; // ISODOW: 1=Lunes -> Índice 0
-                    datosSemana[indiceArreglo] = parseFloat(dia.total_gastado);
-                });
-            }
-
-            window.chartSemanaInstancia = new Chart(ctxSemana, {
-                type: 'line', // Tipo de gráfico: Línea
-                data: {
-                    labels: nombresDias,
-                    datasets: [{
-                        label: 'Gasto Diario ($)',
-                        data: datosSemana,
-                        borderColor: '#3b82f6', 
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)', 
-                        borderWidth: 3,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#3b82f6',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        fill: true, 
-                        tension: 0.4 
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) { return ' $' + context.raw.toLocaleString('es-MX', { minimumFractionDigits: 2 }); }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { callback: function(value) { return '$' + value; } } }
-                    }
-                }
-            });
+            renderizarGraficaProveedores('mes');
+            renderizarGraficaSemana(false);
 
         } catch (error) {
-            console.error('Error al cargar el resumen de reportes:', error);
-            document.getElementById('repProveedorTop').textContent = 'Error al cargar';
+            console.error('Error al cargar reportes:', error);
             document.getElementById('contenedorUltimasCompras').innerHTML = '<p style="color: #ef4444; text-align: center;">Error al cargar datos.</p>';
         }
     };
+
+    const renderizarGraficaProveedores = (filtro) => {
+        const ctx = document.getElementById('graficaProveedores').getContext('2d');
+        if (chartTopProveedores) chartTopProveedores.destroy();
+
+        // Decide qué datos usar basándose en el select
+        const datosFiltro = filtro === 'semana' ? datosReportesGlobal.grafica_proveedores_semana : datosReportesGlobal.grafica_proveedores;
+        
+        const etiquetas = datosFiltro.map(p => p.nombre);
+        const montos = datosFiltro.map(p => parseFloat(p.total_comprado));
+
+        chartTopProveedores = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: etiquetas,
+                datasets: [{
+                    label: 'Gasto ($)',
+                    data: montos,
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: v => '$' + v }, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    };
+
+    const renderizarGraficaSemana = (mostrarAnterior) => {
+        const ctxSemana = document.getElementById('graficaSemana').getContext('2d');
+        if (chartSemanaInstancia) chartSemanaInstancia.destroy();
+
+        const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        const datosSemanaActual = [0, 0, 0, 0, 0, 0, 0];
+        const datosSemanaAnterior = [0, 0, 0, 0, 0, 0, 0];
+
+        if (datosReportesGlobal.grafica_semana) {
+            datosReportesGlobal.grafica_semana.forEach(dia => {
+                datosSemanaActual[parseInt(dia.dia_indice) - 1] = parseFloat(dia.total_gastado);
+            });
+        }
+
+        if (datosReportesGlobal.grafica_semana_anterior) {
+            datosReportesGlobal.grafica_semana_anterior.forEach(dia => {
+                datosSemanaAnterior[parseInt(dia.dia_indice) - 1] = parseFloat(dia.total_gastado);
+            });
+        }
+
+        const datasets = [{
+            label: 'Esta Semana',
+            data: datosSemanaActual,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 3,
+            pointBackgroundColor: '#ffffff',
+            pointBorderColor: '#3b82f6',
+            fill: true, tension: 0.4
+        }];
+
+        if (mostrarAnterior) {
+            datasets.push({
+                label: 'Semana Pasada',
+                data: datosSemanaAnterior,
+                borderColor: '#94a3b8',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                borderDash: [5, 5], 
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#94a3b8',
+                fill: false, tension: 0.4
+            });
+        }
+
+        chartSemanaInstancia = new Chart(ctxSemana, {
+            type: 'line',
+            data: { labels: nombresDias, datasets: datasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: mostrarAnterior, position: 'top' },
+                    tooltip: { callbacks: { label: c => ' $' + c.raw.toLocaleString('es-MX', { minimumFractionDigits: 2 }) } }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: v => '$' + v } }
+                }
+            }
+        });
+    };
+
+    const selectFiltroTopProv = document.getElementById('selectFiltroTopProv');
+    if(selectFiltroTopProv) {
+        selectFiltroTopProv.addEventListener('change', (e) => {
+            if(datosReportesGlobal) renderizarGraficaProveedores(e.target.value);
+        });
+    }
+
+    const chkCompararSemana = document.getElementById('chkCompararSemana');
+    if(chkCompararSemana) {
+        chkCompararSemana.addEventListener('change', (e) => {
+            if(datosReportesGlobal) renderizarGraficaSemana(e.target.checked);
+        });
+    }
 
     cargarResumenReportes();
 

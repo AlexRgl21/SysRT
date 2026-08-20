@@ -1,5 +1,6 @@
 punto-ventas-backend/.env
 punto-ventas-backend/node_modules
+.vscode
 
 
 

@@ -817,6 +817,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // MODULO DE REPORTES (DASHBOARD)
+    let chartTopProveedores = null; 
+
     const cargarResumenReportes = async () => {
         try {
             const respuesta = await fetch('http://localhost:3000/api/reportes/resumen');
@@ -828,13 +830,156 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('repFacturasPendientes').textContent = `En ${datos.facturas_pendientes || 0} facturas sin pagar`;
             document.getElementById('repGastoMes').textContent = formatoMoneda(datos.gasto_mes);
             document.getElementById('repProveedorTop').textContent = datos.proveedor_top;
+            document.getElementById('repPromedioFactura').textContent = formatoMoneda(datos.promedio_factura);
+
+            const contenedorUltimas = document.getElementById('contenedorUltimasCompras');
+            contenedorUltimas.innerHTML = ''; 
+
+            if (!datos.ultimas_compras || datos.ultimas_compras.length === 0) {
+                contenedorUltimas.innerHTML = '<p style="color: #94a3b8; text-align: center; font-size: 14px; margin-top: 20px;">No hay compras recientes.</p>';
+            } else {
+                datos.ultimas_compras.forEach(compra => {
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.justifyContent = 'space-between';
+                    div.style.alignItems = 'center';
+                    div.style.padding = '12px 15px';
+                    div.style.background = '#f8fafc';
+                    div.style.borderRadius = '8px';
+                    div.style.border = '1px solid #f1f5f9';
+
+                    const fecha = new Date(compra.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' });
+                    const colorEstatus = compra.estatus_pago === 'pagada' ? '#10b981' : '#f59e0b';
+
+                    div.innerHTML = `
+                        <div>
+                            <p style="margin: 0; font-weight: 600; color: #1e293b; font-size: 14px;">${compra.proveedor}</p>
+                            <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b;">${fecha}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="margin: 0; font-weight: 700; color: #0f172a; font-size: 14px;">${formatoMoneda(compra.total_compra)}</p>
+                            <p style="margin: 4px 0 0 0; font-size: 12px; color: ${colorEstatus}; font-weight: 600; text-transform: capitalize;">${compra.estatus_pago}</p>
+                        </div>
+                    `;
+                    contenedorUltimas.appendChild(div);
+                });
+            }
+
+            const ctx = document.getElementById('graficaProveedores').getContext('2d');
+            
+            if (chartTopProveedores) {
+                chartTopProveedores.destroy();
+            }
+
+            const etiquetas = datos.grafica_proveedores.map(p => p.nombre);
+            const montos = datos.grafica_proveedores.map(p => parseFloat(p.total_comprado));
+
+            chartTopProveedores = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: etiquetas,
+                    datasets: [{
+                        label: 'Gasto del mes ($)',
+                        data: montos,
+                        backgroundColor: [
+                            '#3b82f6', // Azul
+                            '#10b981', // Verde
+                            '#f59e0b', // Naranja
+                            '#ef4444', // Rojo
+                            '#8b5cf6'  // Morado
+                        ],
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' $' + context.raw.toLocaleString('es-MX', { minimumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) { return '$' + value; }
+                            },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            const ctxSemana = document.getElementById('graficaSemana').getContext('2d');
+            
+            // Si creamos una variable global "chartSemana = null" al inicio, la destruimos aquí
+            if (window.chartSemanaInstancia) { window.chartSemanaInstancia.destroy(); }
+
+            // Preparamos un arreglo de 7 días en ceros [Lunes, Martes, ..., Domingo]
+            const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            const datosSemana = [0, 0, 0, 0, 0, 0, 0];
+
+            // Rellenamos los días que sí tuvieron gastos
+            if (datos.grafica_semana) {
+                datos.grafica_semana.forEach(dia => {
+                    const indiceArreglo = parseInt(dia.dia_indice) - 1; // ISODOW: 1=Lunes -> Índice 0
+                    datosSemana[indiceArreglo] = parseFloat(dia.total_gastado);
+                });
+            }
+
+            window.chartSemanaInstancia = new Chart(ctxSemana, {
+                type: 'line', // Tipo de gráfico: Línea
+                data: {
+                    labels: nombresDias,
+                    datasets: [{
+                        label: 'Gasto Diario ($)',
+                        data: datosSemana,
+                        borderColor: '#3b82f6', 
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#3b82f6',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true, 
+                        tension: 0.4 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) { return ' $' + context.raw.toLocaleString('es-MX', { minimumFractionDigits: 2 }); }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: function(value) { return '$' + value; } } }
+                    }
+                }
+            });
 
         } catch (error) {
             console.error('Error al cargar el resumen de reportes:', error);
             document.getElementById('repProveedorTop').textContent = 'Error al cargar';
+            document.getElementById('contenedorUltimasCompras').innerHTML = '<p style="color: #ef4444; text-align: center;">Error al cargar datos.</p>';
         }
     };
 
     cargarResumenReportes();
 
 });
+

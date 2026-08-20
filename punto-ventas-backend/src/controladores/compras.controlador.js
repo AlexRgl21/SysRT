@@ -254,6 +254,18 @@ const obtenerResumenReportes = async (req, res) => {
             ORDER BY c.fecha DESC, c.id DESC
             LIMIT 5
         `;
+
+        // GASTOS DE LA SEMANA ACTUAL (Lunes a Domingo)
+        const querySemana = `
+            SELECT 
+                EXTRACT(ISODOW FROM fecha) AS dia_indice,
+                COALESCE(SUM(total_compra), 0) AS total_gastado
+            FROM compras
+            WHERE date_trunc('week', fecha) = date_trunc('week', CURRENT_DATE)
+            GROUP BY dia_indice
+            ORDER BY dia_indice ASC
+        `;
+        const { rows: resSemana } = await pool.query(querySemana);
         const { rows: resUltimasCompras } = await pool.query(queryUltimasCompras);
 
         const gastoMes = parseFloat(resGastoActual[0].gasto_mes);
@@ -268,7 +280,8 @@ const obtenerResumenReportes = async (req, res) => {
             gasto_mes_anterior: parseFloat(resGastoAnterior[0].gasto_mes_anterior),
             proveedor_top: resTopProveedores.length > 0 ? resTopProveedores[0].nombre : 'Ninguno aún',
             grafica_proveedores: resTopProveedores, 
-            ultimas_compras: resUltimasCompras 
+            ultimas_compras: resUltimasCompras, 
+            grafica_semana: resSemana
         });
     } catch (error) {
         console.error('Error al obtener reporte', error);

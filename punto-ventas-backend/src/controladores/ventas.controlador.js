@@ -58,8 +58,44 @@ const registrarVenta = async (req, res) => {
     }
 };
 
+// FUNCION PARA EL DASHBOARD PRINCIPAL 
+const obtenerVentas = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                v.id, 
+                v.fecha, 
+                v.total,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'id', p.id,
+                            'nombre', p.nombre,
+                            'cantidad', dv.cantidad,
+                            'precio_venta', dv.precio_unitario,
+                            'precio_compra', p.precio_compra 
+                        )
+                    ) FILTER (WHERE p.id IS NOT NULL), '[]'
+                ) as productos
+            FROM ventas v
+            LEFT JOIN detalle_ventas dv ON v.id = dv.venta_id
+            LEFT JOIN productos p ON dv.producto_id = p.id
+            GROUP BY v.id
+            ORDER BY v.fecha DESC;
+        `;
+        
+        const resultado = await pool.query(query);
+        res.status(200).json(resultado.rows);
+        
+    } catch (error) {
+        console.error('Error al obtener las ventas para el dashboard:', error);
+        res.status(500).json({ mensaje: 'Error interno al cargar el historial de ventas.' });
+    }
+};
+
 
 module.exports = {
-    registrarVenta
+    registrarVenta,
+    obtenerVentas
 };
 

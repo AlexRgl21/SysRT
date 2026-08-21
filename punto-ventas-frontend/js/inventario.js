@@ -12,11 +12,17 @@ const actualizarEstadisticas = (productos) => {
     const enStock = productos.filter(p => Number(p.stock_actual) > 0).length;
     const stockBajo = productos.filter(p => Number(p.stock_actual)  > 0 && Number(p.stock_actual) <= 10).length;
     const agotados = productos.filter (p => Number(p.stock_actual) === 0).length;
+    const valorTotal = productos.reduce((acumulado, p) => {
+        const stock = Number(p.stock_actual) || 0;
+        const costo = Number(p.precio_compra) || 0;
+        return acumulado + (stock * costo);
+    }, 0);
 
     document.getElementById('statTotal').textContent = total;
     document.getElementById('statConStock').textContent = enStock;
     document.getElementById('statStockBajo').textContent = stockBajo;
     document.getElementById('statAgotados').textContent = agotados;
+    document.getElementById('statValorTotal').textContent = `$${valorTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const renderizarTabla = () => {

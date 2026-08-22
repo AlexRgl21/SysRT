@@ -643,3 +643,33 @@ if (btnImprimirInventario) {
         }, 300);
     });
 }
+
+
+// ATAJOS DE TECLADO DEL MÓDULO DE INVENTARIO
+// Esc                -> Cierra el modal de producto (si está abierto)
+// Ctrl/Cmd + Enter    -> Ejecuta la acción principal de la sección visible
+//                        (Buscar código, Guardar stock, Guardar nuevo
+//                        producto o Guardar edición, según corresponda)
+document.addEventListener('keydown', (evento) => {
+    const modalAbierto = !modalProducto.classList.contains('oculto');
+    if (!modalAbierto) return;
+
+    if (evento.key === 'Escape') {
+        btnCerrarModal.click();
+        return;
+    }
+
+    if ((evento.ctrlKey || evento.metaKey) && evento.key === 'Enter') {
+        evento.preventDefault();
+
+        if (!seccionEscaner.classList.contains('oculto')) {
+            btnBuscarCodigo.click();
+        } else if (!seccionIngresoStock.classList.contains('oculto')) {
+            document.getElementById('btnGuardarStock').click();
+        } else if (!seccionNuevoProducto.classList.contains('oculto')) {
+            btnGuardarNuevoProducto.click();
+        } else if (!document.getElementById('seccionEditarProducto').classList.contains('oculto')) {
+            document.getElementById('btnGuardarEdicion').click();
+        }
+    }
+});

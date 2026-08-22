@@ -471,4 +471,41 @@ if (btnCancelarVenta) {
         }
     });
 
+
+// ATAJOS DE TECLADO DEL MÓDULO DE VENTAS
+
+    document.addEventListener('keydown', (evento) => {
+        const precioVariableAbierto = modalPrecioVariable.classList.contains('modal-activo');
+        const cobroAbierto = modalCobro.classList.contains('modal-activo');
+
+        if ((evento.ctrlKey || evento.metaKey) && evento.key === 'Enter') {
+            evento.preventDefault();
+
+            if (precioVariableAbierto) {
+                btnConfirmarPrecio.click();
+            } else if (cobroAbierto) {
+                if (!btnConfirmarPago.disabled) btnConfirmarPago.click();
+            } else {
+                btnProcederPago.click();
+            }
+            return;
+        }
+
+        if (evento.key === 'Escape') {
+            if (precioVariableAbierto) {
+                btnCerrarModalPrecio.click();
+            } else if (cobroAbierto) {
+                btnCerrarModal.click();
+            } else {
+                btnCancelarVenta.click();
+            }
+            return;
+        }
+
+        if (evento.key === 'F2') {
+            evento.preventDefault();
+            if (inputEscanner) inputEscanner.focus();
+        }
+    });
+
 }

@@ -89,6 +89,10 @@ const crearProveedor = async (req, res) => {
     try {
         const { nombre, telefono, dias_visita } = req.body;
 
+        if (!nombre || nombre.trim() === '') {
+            return res.status(400).json({ error: 'El nombre del proveedor es obligatorio' });
+        }
+
         const query = `
             INSERT INTO proveedores (nombre, telefono, dias_visita)
             VALUES ($1, $2, $3)
@@ -107,6 +111,13 @@ const crearProveedor = async (req, res) => {
 const registrarCompra = async (req, res) => {
     try {
         const { proveedor_id, total_compra, estatus_pago, saldo_pendiente, notas } = req.body;
+
+        if (!proveedor_id) {
+            return res.status(400).json({ error: 'Debes indicar el proveedor de la compra' });
+        }
+        if (total_compra === undefined || Number(total_compra) <= 0) {
+            return res.status(400).json({ error: 'El total de la compra debe ser mayor a cero' });
+        }
 
         const saldoFinal = estatus_pago === 'pagada' ? 0 : saldo_pendiente;
 
@@ -168,32 +179,29 @@ const obtenerDeudas = async (req, res) => {
 const registrarAbono = async (req, res) => {
     try {
         const { id } = req.params;
-        const { monto_abono } = req.body;
+        const abono = parseFloat(req.body.monto_abono);
 
-        const queryConsulta = 'SELECT saldo_pendiente FROM compras WHERE id = $1';
-        const { rows: compras } = await pool.query(queryConsulta, [id]);
-
-        if (compras.length === 0) {
-            return res.status(404).json({ error: 'Factura no encontrada' });
+        if (!abono || abono <= 0) {
+            return res.status(400).json({ error: 'El monto del abono debe ser mayor a cero.' });
         }
-
-        const saldoActual = parseFloat(compras[0].saldo_pendiente);
-        const abono = parseFloat(monto_abono);
-
-        if (abono > saldoActual) {
-            return res.status(400).json({ error: 'El abono no puede ser mayor al saldo que debes.' });
-        }
-
-        const nuevoSaldo = saldoActual - abono;
-        const nuevoEstatus = nuevoSaldo <= 0 ? 'pagada' : 'pendiente';
 
         const queryUpdate = `
             UPDATE compras 
-            SET saldo_pendiente = $1, estatus_pago = $2
-            WHERE id = $3
+            SET saldo_pendiente = saldo_pendiente - $1,
+                estatus_pago = CASE WHEN saldo_pendiente - $1 <= 0 THEN 'pagada' ELSE 'pendiente' END
+            WHERE id = $2 AND saldo_pendiente >= $1
             RETURNING id, saldo_pendiente, estatus_pago
         `;
-        const { rows: actualizadas } = await pool.query(queryUpdate, [nuevoSaldo, nuevoEstatus, id]);
+        const { rows: actualizadas } = await pool.query(queryUpdate, [abono, id]);
+
+        if (actualizadas.length === 0) {
+            // Puede ser que la factura no exista, o que el abono sea mayor al saldo actual
+            const { rows: existe } = await pool.query('SELECT id FROM compras WHERE id = $1', [id]);
+            if (existe.length === 0) {
+                return res.status(404).json({ error: 'Factura no encontrada' });
+            }
+            return res.status(400).json({ error: 'El abono no puede ser mayor al saldo que debes.' });
+        }
 
         res.json({ mensaje: 'Abono registrado correctamente', compra: actualizadas[0] });
     } catch (error) {

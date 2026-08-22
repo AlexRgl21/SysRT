@@ -97,7 +97,8 @@ body {
 .sidebar {
     width: 260px;
     transition: width 0.3s ease; 
-    overflow: hidden;
+    overflow-x: hidden; 
+    overflow-y: auto;   
     display: flex;
     flex-direction: column;
 }
@@ -163,9 +164,34 @@ body {
 .link-menu {
     text-decoration: none; 
     color: inherit; 
-    display: block; 
+    display: flex;
+    align-items: center;   
     width: 100%;
-    height: 100%;
+    gap: 12px;             
+}
+/* Iconos SVG */
+.icono-menu {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0; /* Evita que el ícono se apachurre */
+}
+
+
+.sidebar nav li:hover .icono-menu {
+    color: #0f172a;
+}
+
+.sidebar nav li.activo .icono-menu {
+    color: white;
+}
+
+.sidebar-oculta .link-menu {
+    justify-content: center;
+}
+
+.sidebar-oculta .icono-menu {
+    width: 24px;
+    height: 24px;
 }
 
 /* --- ESTILOS DEL MENÚ DE PERFIL --- */

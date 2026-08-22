@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const metodo = idProveedor ? 'PUT' : 'POST';
 
         try {
-            const respuesta = await fetch(url, {
+            const respuesta = await fetchAutenticado(url, {
                 method: metodo,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datosProveedor)
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cargarDirectorio = async () => {
         try {
-            const respuesta = await fetch('http://localhost:3000/api/proveedores');
+            const respuesta = await fetchAutenticado('http://localhost:3000/api/proveedores');
             proveedoresGlobales = await respuesta.json();
             proveedoresFiltrados = [...proveedoresGlobales]; // Inicialmente mostramos todos
             
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const res = await fetch(`http://localhost:3000/api/proveedores/${id}`, { method: 'DELETE' });
+                        const res = await fetchAutenticado(`http://localhost:3000/api/proveedores/${id}`, { method: 'DELETE' });
                         if (res.ok) {
                             cargarDirectorio();
                             cargarProveedoresSelect(); 
@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cargarAgenda = async () => {
         try {
-            const respuesta = await fetch('http://localhost:3000/api/agenda');
+            const respuesta = await fetchAutenticado('http://localhost:3000/api/agenda');
             const visitas = await respuesta.json();
 
             if (!respuesta.ok) {
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 document.getElementById('btnGenerarAgenda').addEventListener('click', async () => {
                     try {
-                        const res = await fetch('http://localhost:3000/api/agenda/generar', { method: 'POST' });
+                        const res = await fetchAutenticado('http://localhost:3000/api/agenda/generar', { method: 'POST' });
                         if (res.ok) {
                             cargarAgenda(); 
                         }
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const actualizarVisita = async (id, asistio, notas) => {
         try {
-            await fetch(`http://localhost:3000/api/agenda/${id}`, {
+            await fetchAutenticado(`http://localhost:3000/api/agenda/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify ({ asistio, notas })
@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cargarCompras = async () => {
         try {
-            const respuesta = await fetch('http://localhost:3000/api/compras');
+            const respuesta = await fetchAutenticado('http://localhost:3000/api/compras');
             comprasGlobales = await respuesta.json();
             comprasFiltradas = [...comprasGlobales]; 
             
@@ -606,7 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cargarProveedoresSelect = async () => {
         try {
-            const respuesta = await fetch('http://localhost:3000/api/proveedores');
+            const respuesta = await fetchAutenticado('http://localhost:3000/api/proveedores');
             const proveedores = await respuesta.json();
 
             selectProveedor.innerHTML = '<option value="">Seleccione un proveedor...</option>';
@@ -659,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const respuesta = await fetch('http://localhost:3000/api/compras', {
+            const respuesta = await fetchAutenticado('http://localhost:3000/api/compras', {
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(nuevaCompra)
@@ -707,7 +707,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cargarDeudas = async () => {
         try {
-            const respuesta = await fetch('http://localhost:3000/api/deudas');
+            const respuesta = await fetchAutenticado('http://localhost:3000/api/deudas');
             const deudas = await respuesta.json();
 
             bodyDeudas.innerHTML = '';
@@ -744,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cargarFacturasAbonoSelect = async () => {
         try {
-            const respuesta = await fetch('http://localhost:3000/api/deudas');
+            const respuesta = await fetchAutenticado('http://localhost:3000/api/deudas');
             const deudas = await respuesta.json();
 
             selectAbonoFactura.innerHTML = '<option value="">Seleccione una factura...</option>';
@@ -774,7 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const monto = document.getElementById('abonoMonto').value;
 
         try {
-            const respuesta = await fetch(`http://localhost:3000/api/deudas/${idFactura}/abono`, {
+            const respuesta = await fetchAutenticado(`http://localhost:3000/api/deudas/${idFactura}/abono`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ monto_abono: monto })
@@ -823,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cargarResumenReportes = async () => {
         try {
-            const respuesta = await fetch('http://localhost:3000/api/reportes/resumen');
+            const respuesta = await fetchAutenticado('http://localhost:3000/api/reportes/resumen');
             datosReportesGlobal = await respuesta.json();
             const datos = datosReportesGlobal;
 

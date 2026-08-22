@@ -126,7 +126,7 @@ const renderizarPaginacion = () => {
 
 const cargarInventario = async () => {
     try {
-        const respuesta = await fetch(API_URL);
+        const respuesta = await fetchAutenticado(API_URL);
         if (!respuesta.ok) throw new Error('Error al conectar con el servidor');
 
         listaProductosGlobal = await respuesta.json();
@@ -158,7 +158,7 @@ const eliminarProducto = async (id) => {
     if (!confirmacion.isConfirmed) return;
 
     try {
-        const respuesta = await fetch(`${API_URL}/${id}`, {
+        const respuesta = await fetchAutenticado(`${API_URL}/${id}`, {
             method: 'DELETE'
         });
 
@@ -245,7 +245,7 @@ btnBuscarCodigo.addEventListener('click', async () => {
     }
 
     try {
-        const respuesta = await fetch(`http://localhost:3000/api/productos/codigo/${codigo}`);
+        const respuesta = await fetchAutenticado(`http://localhost:3000/api/productos/codigo/${codigo}`);
 
         if (respuesta.ok) {
             const producto = await respuesta.json();
@@ -322,7 +322,7 @@ btnGuardarNuevoProducto.addEventListener('click', async () => {
     };
 
     try {
-        const respuesta = await fetch('http://localhost:3000/api/productos', {
+        const respuesta = await fetchAutenticado('http://localhost:3000/api/productos', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -382,7 +382,7 @@ btnGuardarStock.addEventListener('click', async () => {
     }
 
     try {
-        const respuesta = await fetch(`http://localhost:3000/api/productos/${productoId}/entrada`, {
+        const respuesta = await fetchAutenticado(`http://localhost:3000/api/productos/${productoId}/entrada`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -483,7 +483,7 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
     };
 
     try {
-        const respuesta = await fetch(`${API_URL}/${id}`, {
+        const respuesta = await fetchAutenticado(`${API_URL}/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -519,7 +519,7 @@ document.getElementById('btnGuardarEdicion').addEventListener('click', async () 
 // Función para descargar y pintar las categorías dinámicamente
 const cargarCategorias = async () => {
     try {
-        const respuesta = await fetch('http://localhost:3000/api/categorias');
+        const respuesta = await fetchAutenticado('http://localhost:3000/api/categorias');
         if (!respuesta.ok) throw new Error('Error al conectar');
         
         const categorias = await respuesta.json();

@@ -48,7 +48,7 @@ formLogin.addEventListener('submit', async (evento) => {
             throw new Error(data.mensaje || 'Credenciales incorrectas');
         }
         
-        localStorage.setItem('sysrt_sesion', JSON.stringify(data.usuario));
+        localStorage.setItem('sysrt_sesion', JSON.stringify({ ...data.usuario, token: data.token }));
 
         Toastify({
             text: `¡Bienvenido, ${data.usuario.nombre}!`,

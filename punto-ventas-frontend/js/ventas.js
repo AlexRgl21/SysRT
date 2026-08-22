@@ -40,7 +40,7 @@ const btnCancelarVenta = document.getElementById('btnCancelarVenta')
 
 async function buscarYAgregarProducto(codigo) {
     try {
-        const respuesta = await fetch(`${API_URL}/productos/codigo/${codigo}`);
+        const respuesta = await fetchAutenticado(`${API_URL}/productos/codigo/${codigo}`);
 
         if (!respuesta.ok) {
             sonidoBeepError.play();
@@ -311,7 +311,7 @@ if (btnConfirmarPago) {
         };
 
         try {
-            const respuesta = await fetch(`${API_URL}/ventas`, {
+            const respuesta = await fetchAutenticado(`${API_URL}/ventas`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datosVenta)

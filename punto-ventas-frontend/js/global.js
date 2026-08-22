@@ -1,6 +1,27 @@
 // 1. LÓGICA DE SEGURIDAD 
 const sesionString = localStorage.getItem('sysrt_sesion');
 
+// FUNCION CENTRAL PARA LLAMADAS A LA API
+async function fetchAutenticado(url, opciones = {}) {
+    const sesion = localStorage.getItem('sysrt_sesion');
+    const token = sesion ? JSON.parse(sesion).token : null;
+
+    const encabezados = {
+        ...(opciones.headers || {}),
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+
+    const respuesta = await fetch(url, { ...opciones, headers: encabezados });
+
+    if (respuesta.status === 401) {
+        localStorage.removeItem('sysrt_sesion');
+        window.location.href = 'login.html';
+        return respuesta;
+    }
+
+    return respuesta;
+}
+
 if (!sesionString && !window.location.pathname.includes('login.html')) {
     window.location.href = 'login.html';
 }

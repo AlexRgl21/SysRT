@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // CARGA DE INVENTARIO (Panel de Alertas)
 const cargarDatosInventario = async () => {
     try {
-        const respuesta = await fetch(API_PRODUCTOS_URL);
+        const respuesta = await fetchAutenticado(API_PRODUCTOS_URL);
         if (!respuesta.ok) throw new Error('Error al conectar con la base de datos de productos');
 
         const productos = await respuesta.json(); 
@@ -84,7 +84,7 @@ const actualizarTextosUI = (rango) => {
 // VENTAS (Métricas)
 const cargarDatosVentas = async (rangoTiempo) => {
     try {
-        const respuesta = await fetch(API_VENTAS_URL);
+        const respuesta = await fetchAutenticado(API_VENTAS_URL);
         if (!respuesta.ok) {
             console.warn("Error en la API. Procesando interfaz vacía.");
             procesarMeticasFinancieras([], rangoTiempo);

@@ -40,18 +40,19 @@ async function cargarComponentes(idContenedor, rutaArchivo) {
 // INYECCION Y LOGICA DE INTERFAZ 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    await cargarComponentes('inyectar-sidebar', 'componentes/sidebar.html');
-    await cargarComponentes('inyectar-perfil', 'componentes/perfil.html');
-
     const usuarioActual = sesionString ? JSON.parse(sesionString) : null;
     
+    if (usuarioActual && usuarioActual.rol_id === 1) {
+        await cargarComponentes('inyectar-sidebar', 'componentes/sidebar.html');
+    }
+    
+    await cargarComponentes('inyectar-perfil', 'componentes/perfil.html');
+
     const rutaActualVentana = window.location.pathname;
     const enlacesMenu = document.querySelectorAll('.sidebar nav ul li a.link-menu');
     
     enlacesMenu.forEach(enlace => {
-
         const rutaEnlace = enlace.getAttribute('href');
-        
         if (rutaActualVentana.includes(rutaEnlace)) {
             enlace.parentElement.classList.add('activo');
         } else {
@@ -59,7 +60,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     
-    // SIDEBAR
     const btnToggleSidebar = document.getElementById('btnToggleSidebar');
     const sidebar = document.getElementById('sidebarGlobal');
 
@@ -69,14 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Ocultar Sidebar para Cajeros 
-    if (usuarioActual && usuarioActual.rol_id !== 1) {
-        if (sidebar) {
-            sidebar.style.display = 'none';
-        }
-    }
-
-    // Menú de Perfil y Cerrar Sesión 
     const btnAvatar = document.getElementById('btnAvatarPerfil');
     const dropdown = document.getElementById('dropdownPerfil');
     const btnCerrarSesion = document.getElementById('btnCerrarSesion');
@@ -102,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Botón Salir
+    // 6. Botón Salir con SweetAlert
     if (btnCerrarSesion) {
         btnCerrarSesion.addEventListener('click', () => {
             Swal.fire({
@@ -113,7 +105,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 confirmButtonColor: '#ef4444',
                 cancelButtonColor: '#64748b',
                 confirmButtonText: 'Sí, salir',
-                cancelButtonText: 'Cancelar'
+                cancelButtonText: 'Cancelar',
+                focusConfirm: false // Quita el borde morado de selección
             }).then((resultado) => {
                 if (resultado.isConfirmed) {
                     localStorage.removeItem('sysrt_sesion');

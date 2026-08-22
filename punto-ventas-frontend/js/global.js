@@ -58,6 +58,56 @@ async function cargarComponentes(idContenedor, rutaArchivo) {
     }
 }
 
+// MENÚ LATERAL EN MODO CAJÓN PARA TABLET Y TELÉFONO
+function inicializarMenuMovil() {
+    const sidebar = document.getElementById('sidebarGlobal');
+    if (!sidebar) return;
+
+    // Botón hamburguesa 
+    const btnMenuMovil = document.createElement('button');
+    btnMenuMovil.id = 'btnMenuMovil';
+    btnMenuMovil.className = 'btn-menu-movil';
+    btnMenuMovil.setAttribute('title', 'Abrir menú');
+    btnMenuMovil.setAttribute('aria-label', 'Abrir menú');
+    btnMenuMovil.innerHTML = '☰';
+    document.body.appendChild(btnMenuMovil);
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'sidebarBackdrop';
+    backdrop.className = 'sidebar-backdrop';
+    document.body.appendChild(backdrop);
+
+    const abrirMenuMovil = () => {
+        sidebar.classList.add('sidebar-movil-abierta');
+        backdrop.classList.add('activo');
+    };
+
+    const cerrarMenuMovil = () => {
+        sidebar.classList.remove('sidebar-movil-abierta');
+        backdrop.classList.remove('activo');
+    };
+
+    btnMenuMovil.addEventListener('click', () => {
+        if (sidebar.classList.contains('sidebar-movil-abierta')) {
+            cerrarMenuMovil();
+        } else {
+            abrirMenuMovil();
+        }
+    });
+
+    backdrop.addEventListener('click', cerrarMenuMovil);
+
+    sidebar.querySelectorAll('.link-menu').forEach((enlace) => {
+        enlace.addEventListener('click', cerrarMenuMovil);
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 992) {
+            cerrarMenuMovil();
+        }
+    });
+}
+
 // INYECCION Y LOGICA DE INTERFAZ 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -65,6 +115,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (usuarioActual && usuarioActual.rol_id === 1) {
         await cargarComponentes('inyectar-sidebar', 'componentes/sidebar.html');
+        document.body.classList.add('tiene-sidebar');
+        inicializarMenuMovil();
     }
     
     await cargarComponentes('inyectar-perfil', 'componentes/perfil.html');

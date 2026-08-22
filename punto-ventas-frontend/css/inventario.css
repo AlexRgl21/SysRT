@@ -369,3 +369,72 @@ tbody tr:hover {
 .btn-secundario:hover {
     background-color: #e2e8f0;
 }
+
+/* DISEÑO RESPONSIVO*/
+header {
+    flex-wrap: wrap;
+    row-gap: 15px;
+}
+
+header > div {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 992px) {
+    header {
+        align-items: flex-start;
+    }
+    header > div {
+        width: 100%;
+    }
+    #inputBuscadorTabla {
+        width: 100% !important;
+    }
+    #selectFiltroCategoria {
+        flex: 1;
+        min-width: 160px;
+    }
+}
+
+@media (max-width: 768px) {
+    header > div > div[style*="position: relative"] {
+        width: 100% !important;
+    }
+    .panel-estadisticas {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .tarjeta-stat {
+        flex: 1 1 calc(50% - 12px);
+        min-width: 130px;
+    }
+    #btnNuevoProducto,
+    #btnImprimirInventario {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .tarjeta-stat {
+        flex: 1 1 100%;
+    }
+    .panel-tabla {
+        padding: 14px;
+    }
+    table {
+        min-width: 680px;
+    }
+    .panel-paginacion {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .modal-overlay {
+        padding: 15px;
+        box-sizing: border-box;
+    }
+    .fila-form {
+        flex-direction: column;
+        gap: 0;
+    }
+}

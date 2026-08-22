@@ -403,3 +403,115 @@ body {
         break-inside: avoid;
     }
 }
+
+/*  DISEÑO RESPONSIVO (PC / TABLET / TELÉFONO) */
+
+/* Botón hamburguesa */
+.btn-menu-movil {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1600;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #1e293b;
+    font-size: 20px;
+    line-height: 1;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+}
+
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.5);
+    z-index: 1400;
+}
+
+.sidebar-backdrop.activo {
+    display: block;
+}
+
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+    }
+
+    .contenido {
+        padding: 28px;
+    }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+    .btn-menu-movil {
+        display: flex;
+    }
+
+    .contenedor-principal {
+        position: relative;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1500;
+        box-shadow: 4px 0 25px rgba(0, 0, 0, 0.18);
+    }
+
+    .sidebar.sidebar-oculta {
+        width: 260px;
+    }
+    .sidebar-oculta .texto-menu,
+    .sidebar-oculta .logo img {
+        display: block;
+    }
+    .sidebar-oculta .cabecera-sidebar {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .sidebar.sidebar-movil-abierta {
+        transform: translateX(0);
+    }
+
+    /* El botón de colapsar de escritorio no aplica en móvil */
+    .btn-toggle {
+        display: none;
+    }
+
+    body.tiene-sidebar .contenido {
+        padding-top: 78px;
+    }
+}
+/* CELULAR */
+@media (max-width: 600px) {
+    .contenido {
+        padding: 16px;
+    }
+
+    body.tiene-sidebar .contenido {
+        padding-top: 72px;
+    }
+
+    .cabecera-sidebar {
+        min-height: 70px;
+    }
+
+    .dropdown-oculto {
+        min-width: 200px;
+        max-width: 90vw;
+    }
+}

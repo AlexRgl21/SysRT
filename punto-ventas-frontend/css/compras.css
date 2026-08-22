@@ -271,3 +271,72 @@
     text-decoration: line-through;
     color: #94a3b8;
 }
+
+
+/* DISEÑO RESPONSIVO */
+main > header {
+    flex-wrap: wrap;
+    row-gap: 15px;
+}
+
+@media (max-width: 992px) {
+    [style*="grid-template-columns: 2fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .tabs-contenedor {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    .tab-btn {
+        flex-shrink: 0;
+        padding: 12px 18px;
+    }
+
+    #tab-directorio .panel-tabla > div:first-child,
+    #tab-compras .panel-tabla > div:first-child {
+        flex-wrap: wrap;
+        row-gap: 15px;
+    }
+
+    div:has(> #buscadorDirectorio),
+    div:has(> #buscadorCompras) {
+        width: 100% !important;
+    }
+
+    #filtroFechaCompras,
+    #filtroEstatusCompras {
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .panel-tabla {
+        padding: 15px;
+    }
+
+    table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-overlay {
+        padding: 15px;
+        box-sizing: border-box;
+    }
+    .modal-body > form > div[style*="display: flex"] {
+        flex-direction: column;
+    }
+    [style*="font-size: 38px"] {
+        font-size: 26px !important;
+    }
+    [style*="font-size: 32px"] {
+        font-size: 24px !important;
+    }
+    .agenda-detalle {
+        padding-left: 20px;
+    }
+}

@@ -142,3 +142,21 @@ h2 {
 .btn-entrar:active {
     transform: scale(0.98);
 }
+
+
+/* DISEÑO RESPONSIVO */
+@media (max-width: 480px) {
+    body {
+        height: auto;
+        min-height: 100dvh;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .login-container {
+        padding: 28px 22px;
+    }
+    .logo {
+        width: 200px;
+        transform: scale(1.4);
+    }
+}

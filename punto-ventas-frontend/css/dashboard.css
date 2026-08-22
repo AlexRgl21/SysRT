@@ -184,3 +184,55 @@
     color: white;
     box-shadow: 0 2px 5px rgba(56, 189, 248, 0.4);
 }
+
+/* DISEÑO RESPONSIVO */
+
+@media (max-width: 992px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+    }
+    .h-100 {
+        height: auto;
+    }
+    .grid-kpis {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .header-dashboard {
+        flex-wrap: wrap;
+        row-gap: 15px;
+    }
+    .filtros-tiempo {
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+    }
+    .grid-kpis {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    .kpi-card {
+        padding: 15px;
+    }
+    .kpi-valor {
+        font-size: 22px;
+    }
+    .contenedor-grafico {
+        height: 240px;
+    }
+    .grid-acciones {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-kpis {
+        grid-template-columns: 1fr;
+    }
+    .btn-filtro {
+        padding: 8px 12px;
+        white-space: nowrap;
+    }
+}

@@ -987,5 +987,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cargarResumenReportes();
 
+        cargarResumenReportes();
+
+
+    // ATAJOS DE TECLADO DEL MÓDULO DE COMPRAS
+
+    // Esc                -> Cierra el modal abierto (Proveedor, Compra o Abono)
+    // Ctrl/Cmd + Enter    -> Envía el formulario del modal abierto
+    const modalAbono = document.getElementById('modalAbono');
+
+    document.addEventListener('keydown', (evento) => {
+        const proveedorAbierto = modalProveedor.style.display === 'flex';
+        const compraAbierta = modalCompra.style.display === 'flex';
+        const abonoAbierto = modalAbono.style.display === 'flex';
+
+        if (!proveedorAbierto && !compraAbierta && !abonoAbierto) return;
+
+        if (evento.key === 'Escape') {
+            if (proveedorAbierto) cerrarModalProveedor();
+            if (compraAbierta) cerrarModalCompra();
+            if (abonoAbierto) cerrarModalAbono();
+            return;
+        }
+
+        if ((evento.ctrlKey || evento.metaKey) && evento.key === 'Enter') {
+            evento.preventDefault();
+            if (proveedorAbierto) formNuevoProveedor.requestSubmit();
+            if (compraAbierta) formNuevaCompra.requestSubmit();
+            if (abonoAbierto) formNuevoAbono.requestSubmit();
+        }
+    });
+
 });
 

@@ -7,8 +7,9 @@ const registrarVenta = async (req, res) => {
         return res.status(400).json({ mensaje: 'El carrito de ventas esta vacío.'});
     }
 
+    const cliente = await pool.connect();
     try {
-        await pool.query('BEGIN');
+        await cliente.query('BEGIN');
 
         const queryVenta = `
             INSERT INTO ventas (usuario_id, metodo_pago, total)
@@ -16,7 +17,7 @@ const registrarVenta = async (req, res) => {
             RETURNING id, fecha;
         `;
         
-        const resultadoVenta = await pool.query(queryVenta, [usuario_id || 1, metodo_pago, total]);
+        const resultadoVenta = await cliente.query(queryVenta, [usuario_id || 1, metodo_pago, total]);
         const ventaId = resultadoVenta.rows[0].id;
 
         for (const item of productos) {
@@ -28,33 +29,40 @@ const registrarVenta = async (req, res) => {
                 INSERT INTO detalle_ventas (venta_id, producto_id, cantidad, precio_unitario, costo_unitario, subtotal)
                 VALUES ($1, $2, $3, $4, $5, $6);
             `;
-            await pool.query(queryDetalle, [ventaId, item.id, item.cantidad, item.precio_venta, costoUnitario, subtotal]);
+            await cliente.query(queryDetalle, [ventaId, item.id, item.cantidad, item.precio_venta, costoUnitario, subtotal]);
 
+            // Verificamos que haya stock suficiente ANTES de descontar
             const queryStock = `
                 UPDATE productos
                 SET stock_actual = stock_actual - $1
-                WHERE id = $2 AND deleted_at IS NULL;
-                
+                WHERE id = $2 AND deleted_at IS NULL AND stock_actual >= $1
+                RETURNING id;
             `;
-            await pool.query(queryStock, [item.cantidad, item.id]);
+            const resStock = await cliente.query(queryStock, [item.cantidad, item.id]);
+
+            if (resStock.rows.length === 0) {
+                throw new Error(`Stock insuficiente o producto no encontrado (id: ${item.id})`);
+            }
 
             const queryKardex = `
                 INSERT INTO kardex_inventario (producto_id, tipo_movimiento, cantidad)
                 VALUES ($1, 'SALIDA', $2);
             `;
-            await pool.query(queryKardex, [item.id, item.cantidad]);
+            await cliente.query(queryKardex, [item.id, item.cantidad]);
         }
 
-        await pool.query('COMMIT');
+        await cliente.query('COMMIT');
 
         res.status(201).json({
             mensaje: 'Venta procesada y cobrada con éxito.',
             venta_id: ventaId
         });
     } catch (error) {
-        await pool.query('ROLLBACK');
+        await cliente.query('ROLLBACK');
         console.error('Error crítico al procesar la venta:', error);
-        res.status(500).json({ mensaje: 'Error interno al procesar el cobro.' });
+        res.status(500).json({ mensaje: error.message.includes('Stock insuficiente') ? error.message : 'Error interno al procesar el cobro.' });
+    } finally {
+        cliente.release();
     }
 };
 
@@ -98,4 +106,3 @@ module.exports = {
     registrarVenta,
     obtenerVentas
 };
-

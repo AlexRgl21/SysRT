@@ -32,15 +32,29 @@ const obtenerProductos = async(req, res) => {
 const crearProducto = async (req, res) => {
     const { nombre, categoria_id, precio_compra, precio_venta, stock_actual, codigo } = req.body;
 
+    if (!nombre || nombre.trim() === '') {
+        return res.status(400).json({ mensaje: 'El nombre del producto es obligatorio' });
+    }
+    if (precio_venta === undefined || precio_venta === null || Number(precio_venta) < 0) {
+        return res.status(400).json({ mensaje: 'El precio de venta es obligatorio y no puede ser negativo' });
+    }
+    if (precio_compra !== undefined && Number(precio_compra) < 0) {
+        return res.status(400).json({ mensaje: 'El precio de compra no puede ser negativo' });
+    }
+    if (stock_actual !== undefined && Number(stock_actual) < 0) {
+        return res.status(400).json({ mensaje: 'El stock inicial no puede ser negativo' });
+    }
+
+    const cliente = await pool.connect();
     try {
-        await pool.query('BEGIN');
+        await cliente.query('BEGIN');
 
         const queryProducto = `
             INSERT INTO productos (nombre, categoria_id, precio_compra, precio_venta, stock_actual) 
             VALUES ($1, $2, $3, $4, $5) RETURNING id, nombre;
         `;
         const valoresProducto = [nombre, categoria_id || null, precio_compra || 0.00, precio_venta, stock_actual || 0.000];
-        const resultadoProducto = await pool.query(queryProducto, valoresProducto);
+        const resultadoProducto = await cliente.query(queryProducto, valoresProducto);
         const nuevoProducto = resultadoProducto.rows[0];
 
         if (codigo) {
@@ -48,10 +62,10 @@ const crearProducto = async (req, res) => {
                 INSERT INTO codigos_barras (producto_id, codigo) 
                 VALUES ($1, $2);
             `;
-            await pool.query(queryCodigo, [nuevoProducto.id, codigo]);
+            await cliente.query(queryCodigo, [nuevoProducto.id, codigo]);
         }
 
-        await pool.query('COMMIT');
+        await cliente.query('COMMIT');
 
         res.status(201).json({
             mensaje: 'Producto registrado exitosamente',
@@ -59,9 +73,11 @@ const crearProducto = async (req, res) => {
         });
 
     } catch (error) {
-        await pool.query('ROLLBACK');
+        await cliente.query('ROLLBACK');
         console.error('Error al registrar el producto:', error);
         res.status(500).json({ mensaje: 'Error interno al registrar el producto' });
+    } finally {
+        cliente.release();
     }
 };
 
@@ -191,8 +207,9 @@ const registrarEntradaStock = async (req, res) => {
         return res.status(400).json({ mensaje: 'La cantidad debe ser mayor a cero.'})
     }
 
+    const cliente = await pool.connect();
     try {
-        await pool.query('BEGIN');
+        await cliente.query('BEGIN');
 
         const queryUpdate = `
             UPDATE productos
@@ -200,10 +217,10 @@ const registrarEntradaStock = async (req, res) => {
             WHERE id = $2 AND deleted_at IS NULL
             RETURNING id, nombre, stock_actual;
         `;
-        const resUpdate = await pool.query(queryUpdate, [cantidad, id]);
+        const resUpdate = await cliente.query(queryUpdate, [cantidad, id]);
 
         if (resUpdate.rows.length === 0) {
-            await pool.query('ROLLBACK');
+            await cliente.query('ROLLBACK');
             return res.status(404).json({ mensaje: 'Producto no encontrado o inactivo' });
         }
 
@@ -213,18 +230,20 @@ const registrarEntradaStock = async (req, res) => {
             INSERT INTO kardex_inventario (producto_id, tipo_movimiento, cantidad)
             VALUES ($1, 'ENTRADA', $2);
         `;
-        await pool.query(queryKardex, [id, cantidad]);
+        await cliente.query(queryKardex, [id, cantidad]);
 
-        await pool.query('COMMIT');
+        await cliente.query('COMMIT');
 
         res.status(200).json({
             mensaje: 'Stock actualizado y registrado exitosamente',
             producto: productoActualizado
         });
     } catch (error) {
-        await pool.query('ROLLBACK');
+        await cliente.query('ROLLBACK');
         console.error('Error en la transacción de entrada de stock:', error);
         res.status(500).json({ mensaje: 'Error interno al procesar la entrada de mercancía' });
+    } finally {
+        cliente.release();
     }
 };
 
